@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { api } from '../api.ts'
+import { getAccessToken } from './authStore.ts'
 
 /** The signed-in user's role, permissions and assigned pages: the `access` part of GET /api/auth/me. */
 const meSchema = z.object({
@@ -67,6 +68,12 @@ export async function loadAccess(): Promise<void> {
     if (changed) changeListeners.forEach((l) => l(next, previous))
   } catch {
     // 401s are handled by the axios interceptors (sign out); anything else keeps the previous access.
+    // Until the first load succeeds the pages wait for it, so try again shortly (the server may still be starting).
+    if (!state.loaded) {
+      window.setTimeout(() => {
+        if (!state.loaded && getAccessToken()) void loadAccess()
+      }, 3000)
+    }
   }
 }
 
