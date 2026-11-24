@@ -5,7 +5,6 @@ import com.example.warehouse_proj.audit.AuditLogService;
 import com.example.warehouse_proj.common.PageQuery;
 import com.example.warehouse_proj.common.PageResponse;
 import com.example.warehouse_proj.common.PaginationService;
-import com.example.warehouse_proj.product.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +21,14 @@ public class CategoryService {
     private static final Set<String> SORT_FIELDS = Set.of("name", "description");
 
     private final CategoryRepository categories;
-    private final ProductRepository products;
     private final AuditLogService audit;
     private final PaginationService pagination;
 
     public CategoryService(
             CategoryRepository categories,
-            ProductRepository products,
             AuditLogService audit,
             PaginationService pagination) {
         this.categories = categories;
-        this.products = products;
         this.audit = audit;
         this.pagination = pagination;
     }
