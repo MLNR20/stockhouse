@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Lato, self-hosted via @fontsource (no request to Google Fonts). Lato ships 400 and 700 here;
+   Tailwind's font-medium (500) renders as 400 and font-semibold (600) as 700. */
+@import "@fontsource/lato/400.css";
+@import "@fontsource/lato/700.css";
+
+@theme {
+  /* Tailwind's default `font-sans`, which the whole app inherits from <body>. */
+  --font-sans: "Lato", ui-sans-serif, system-ui, sans-serif;
+}
