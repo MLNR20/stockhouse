@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 public final class ProductDtos {
@@ -23,26 +23,37 @@ public final class ProductDtos {
             UUID categoryId) {
     }
 
+    /** A supplier linked to a product. Soft-deleted suppliers stay listed, with active = false. */
+    public record SupplierRef(UUID id, String name, boolean active) {
+    }
+
     public record Response(
             UUID id,
             String name,
             BigDecimal basePrice,
             UUID categoryId,
+            String categoryName,
+            /** False when the product's category was soft-deleted (it is still shown). True when there is none. */
+            boolean categoryActive,
             boolean active,
             Instant createdAt,
             Instant updatedAt,
-            Set<UUID> supplierIds) {
+            List<UUID> supplierIds,
+            List<SupplierRef> suppliers) {
 
-        static Response from(Product p, Set<UUID> supplierIds) {
+        static Response from(Product p, List<SupplierRef> suppliers) {
             return new Response(
                     p.getId(),
                     p.getName(),
                     p.getBasePrice(),
                     p.getCategory() == null ? null : p.getCategory().getId(),
+                    p.getCategory() == null ? null : p.getCategory().getName(),
+                    p.getCategory() == null || p.getCategory().isActive(),
                     p.isActive(),
                     p.getCreatedAt(),
                     p.getUpdatedAt(),
-                    supplierIds);
+                    suppliers.stream().map(SupplierRef::id).toList(),
+                    suppliers);
         }
     }
 }

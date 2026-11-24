@@ -37,9 +37,12 @@ public class CategoryService {
         this.pagination = pagination;
     }
 
+    /** Active categories; with includeInactive the soft-deleted ones too (their products still show them). */
     @Transactional(readOnly = true)
-    public List<CategoryDtos.Response> list() {
-        return categories.findAllByActiveTrue().stream().map(CategoryDtos.Response::from).toList();
+    public List<CategoryDtos.Response> list(boolean includeInactive) {
+        return (includeInactive ? categories.findAll() : categories.findAllByActiveTrue()).stream()
+                .map(CategoryDtos.Response::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -71,13 +74,13 @@ public class CategoryService {
         return CategoryDtos.Response.from(category);
     }
 
-    /** Soft delete; refused while the category still has active products. */
+    /**
+     * Soft delete. Products keep pointing at the category, and it stays visible on them (marked as deleted),
+     * so deleting a category never changes or hides what a product was filed under.
+     */
     @Transactional
     public void delete(UUID id) {
         Category category = find(id);
-        if (products.existsByCategoryIdAndActiveTrue(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Category still has products");
-        }
         category.setActive(false);
         audit.record(AuditAction.DELETE, ENTITY, id);
     }

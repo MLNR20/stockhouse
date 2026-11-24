@@ -20,9 +20,8 @@ const formatPrice = (price: number) =>
 
 export default function Products() {
   // Only used to name and offer categories, so a failure here just leaves the dropdown empty.
-  const { items: categories } = useCrud<Category>('/api/categories', { schema: categorySchema })
-
-  const categoryName = useMemo(() => new Map(categories.map((c) => [c.id, c.name])), [categories])
+  // Deleted categories are included so a product filed under one still shows (and keeps) it.
+  const { items: categories } = useCrud<Category>('/api/categories?includeInactive=true', { schema: categorySchema })
 
   const columns = useMemo<Column<Product>[]>(
     () => [
@@ -30,8 +29,16 @@ export default function Products() {
       {
         key: 'category',
         header: 'Category',
-        render: (p) => (p.categoryId ? (categoryName.get(p.categoryId) ?? '—') : '—'),
-        searchValue: (p) => (p.categoryId ? categoryName.get(p.categoryId) : undefined),
+        render: (p) =>
+          p.categoryId ? (
+            <span className={p.categoryActive ? '' : 'text-slate-400'}>
+              {p.categoryName ?? '—'}
+              {!p.categoryActive && <span className="ml-1.5 text-xs italic">(deleted)</span>}
+            </span>
+          ) : (
+            '—'
+          ),
+        searchValue: (p) => p.categoryName,
       },
       {
         key: 'basePrice',
@@ -42,11 +49,23 @@ export default function Products() {
       {
         key: 'suppliers',
         header: 'Suppliers',
-        render: (p) => p.supplierIds.length,
-        searchValue: (p) => p.supplierIds.length,
+        render: (p) =>
+          p.suppliers.length === 0 ? (
+            '—'
+          ) : (
+            <ul className="space-y-0.5">
+              {p.suppliers.map((s) => (
+                <li key={s.id} className={s.active ? '' : 'text-slate-400'}>
+                  {s.name}
+                  {!s.active && <span className="ml-1.5 text-xs italic">(deleted)</span>}
+                </li>
+              ))}
+            </ul>
+          ),
+        searchValue: (p) => p.suppliers.map((s) => s.name).join(' '),
       },
     ],
-    [categoryName],
+    [],
   )
 
   const fields = useMemo<FieldConfig<ProductFormValues>[]>(
@@ -58,7 +77,7 @@ export default function Products() {
         label: 'Category',
         type: 'select',
         placeholder: 'No category',
-        options: categories.map((c) => ({ value: c.id, label: c.name })),
+        options: categories.map((c) => ({ value: c.id, label: c.active ? c.name : `${c.name} (deleted)` })),
       },
     ],
     [categories],

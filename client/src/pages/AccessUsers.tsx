@@ -75,6 +75,8 @@ export default function AccessUsers() {
       })}
       itemName={(u) => u.email}
       permissionResource="users"
+      // Admin accounts cannot be deleted (the server refuses too); change their role first.
+      canDeleteRow={(u) => u.roleName?.toLowerCase() !== 'admin'}
       searchPlaceholder="Search users…"
     />
   )

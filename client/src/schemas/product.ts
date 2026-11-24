@@ -7,7 +7,12 @@ export const productSchema = z.object({
   name: z.string(),
   basePrice: z.number(),
   categoryId: z.string().nullable(),
+  categoryName: z.string().nullable().default(null),
+  /** False when the product's category was deleted; it is still shown, marked as deleted. */
+  categoryActive: z.boolean().default(true),
   supplierIds: z.array(z.string()).default([]),
+  /** Suppliers linked to the product by name; soft-deleted ones stay listed with active = false. */
+  suppliers: z.array(z.object({ id: z.string(), name: z.string(), active: z.boolean() })).default([]),
   ...timestampFields,
 })
 
@@ -28,6 +33,6 @@ export const productInputSchema = z.object({
 export type ProductFormValues = z.input<typeof productInputSchema>
 export type ProductInput = z.output<typeof productInputSchema>
 
-/** GET /api/categories (just what the dropdown needs). */
-export const categorySchema = z.object({ id: z.string(), name: z.string() })
+/** GET /api/categories?includeInactive=true (just what the dropdown needs). */
+export const categorySchema = z.object({ id: z.string(), name: z.string(), active: z.boolean().default(true) })
 export type Category = z.infer<typeof categorySchema>

@@ -55,6 +55,8 @@ type CrudPageProps<T extends { id: string | number }, TValues extends Record<str
   timestamps?: boolean
   /** Shown above the table, e.g. a hint that a prerequisite record is missing. */
   notice?: ReactNode
+  /** Hides Delete on rows that must never be deleted (e.g. admin accounts). Default: every row can be. */
+  canDeleteRow?: (item: T) => boolean
   /** When set, "Add" opens this page (e.g. '/orders/new') instead of the pop-up form. */
   addTo?: string
   /** Extra buttons in each row's Actions cell, before Edit / Delete (e.g. a "Details" button). */
@@ -86,6 +88,7 @@ export default function CrudPage<
   timestamps = true,
   notice,
   addTo,
+  canDeleteRow,
   rowActions,
 }: CrudPageProps<T, TValues, TInput>) {
   const { items, loading, error, create, update, remove } = useCrud<T, TInput>(resource, { schema })
@@ -164,7 +167,7 @@ export default function CrudPage<
                           Edit
                         </button>
                       )}
-                      {canDelete && (
+                      {canDelete && (canDeleteRow?.(item) ?? true) && (
                         <button
                           type="button"
                           onClick={() => {

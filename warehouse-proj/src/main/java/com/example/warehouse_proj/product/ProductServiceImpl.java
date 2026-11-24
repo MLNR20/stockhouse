@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,8 +68,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResponse<ProductDtos.Response> page(PageQuery query) {
         Page<Product> result = products.findAllByActiveTrue(pagination.toPageable(query, SORT_FIELDS));
-        Map<UUID, Set<UUID>> supplierIds = supplierIdsByProduct(result.getContent());
-        return PageResponse.of(result, p -> ProductDtos.Response.from(p, supplierIds.getOrDefault(p.getId(), Set.of())));
+        Map<UUID, List<ProductDtos.SupplierRef>> suppliers = suppliersByProduct(result.getContent());
+        return PageResponse.of(result, p -> ProductDtos.Response.from(p, suppliers.getOrDefault(p.getId(), List.of())));
     }
 
     @Transactional(readOnly = true)
@@ -84,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(findCategory(request.categoryId()));
         products.save(product);
         audit.record(AuditAction.CREATE, ENTITY, product.getId());
-        return ProductDtos.Response.from(product, Set.of());
+        return ProductDtos.Response.from(product, List.of());
     }
 
     @Transactional
@@ -93,7 +94,11 @@ public class ProductServiceImpl implements ProductService {
         Product product = find(id);
         product.setName(request.name().trim());
         product.setBasePrice(request.basePrice());
-        product.setCategory(findCategory(request.categoryId()));
+        // Keeping the category it already has is always fine, even if that category was deleted since.
+        Category current = product.getCategory();
+        if (current == null || request.categoryId() == null || !current.getId().equals(request.categoryId())) {
+            product.setCategory(findCategory(request.categoryId()));
+        }
         // Flush so @PreUpdate has set updatedAt before the response is built.
         products.saveAndFlush(product);
         audit.record(AuditAction.UPDATE, ENTITY, product.getId());
@@ -116,23 +121,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private List<ProductDtos.Response> toResponses(Collection<Product> list) {
-        Map<UUID, Set<UUID>> supplierIds = supplierIdsByProduct(list);
+        Map<UUID, List<ProductDtos.SupplierRef>> suppliers = suppliersByProduct(list);
         return list.stream()
-                .map(p -> ProductDtos.Response.from(p, supplierIds.getOrDefault(p.getId(), Set.of())))
+                .map(p -> ProductDtos.Response.from(p, suppliers.getOrDefault(p.getId(), List.of())))
                 .toList();
     }
 
-    /** Active suppliers linked (via active links) to each product, in one query. */
-    private Map<UUID, Set<UUID>> supplierIdsByProduct(Collection<Product> list) {
+    /**
+     * Suppliers linked (via active links) to each product, by name, in one query. A supplier that was soft-deleted
+     * stays in the list (active = false) so the product still shows where it came from.
+     */
+    private Map<UUID, List<ProductDtos.SupplierRef>> suppliersByProduct(Collection<Product> list) {
         if (list.isEmpty()) {
             return Map.of();
         }
         List<UUID> ids = list.stream().map(Product::getId).toList();
         return supplierLinks.findAllByProductIdInAndActiveTrue(ids).stream()
-                .filter(link -> link.getSupplier().isActive())
                 .collect(Collectors.groupingBy(
                         link -> link.getProduct().getId(),
-                        Collectors.mapping(link -> link.getSupplier().getId(), Collectors.toSet())));
+                        Collectors.mapping(
+                                link -> new ProductDtos.SupplierRef(
+                                        link.getSupplier().getId(),
+                                        link.getSupplier().getSupplierName(),
+                                        link.getSupplier().isActive()),
+                                Collectors.collectingAndThen(Collectors.toList(), refs -> refs.stream()
+                                        .sorted(Comparator.comparing(
+                                                ProductDtos.SupplierRef::name, String.CASE_INSENSITIVE_ORDER))
+                                        .toList()))));
     }
 
     /** Null means "no category"; an id must belong to an active category. */
@@ -140,8 +155,12 @@ public class ProductServiceImpl implements ProductService {
         if (id == null) {
             return null;
         }
-        return categories.findByIdAndActiveTrue(id)
+        Category category = categories.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+        if (!category.isActive()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "That category has been deleted");
+        }
+        return category;
     }
 
     private Product find(UUID id) {

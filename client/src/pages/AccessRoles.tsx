@@ -175,32 +175,45 @@ export default function AccessRoles() {
       {loading && roles.length === 0 ? (
         <p className="text-sm text-slate-500">Loading…</p>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
-          <ul className="space-y-1" aria-label="Roles">
-            {roles.map((role) => (
-              <li key={role.id}>
+        <div className="space-y-6">
+          {/* One tab per role; the New role tab appears while a role is being added. */}
+          <div role="tablist" aria-label="Roles" className="mb-2 flex gap-1 overflow-x-auto border-b border-slate-200">
+            {roles.map((role) => {
+              const active = selected === role.id
+              return (
                 <button
+                  key={role.id}
                   type="button"
+                  role="tab"
+                  aria-selected={active}
                   onClick={() => select(role)}
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm ${
-                    selected === role.id
-                      ? 'bg-blue-50 font-medium text-blue-700'
-                      : 'text-slate-700 hover:bg-slate-100'
+                  className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium ${
+                    active
+                      ? 'border-blue-600 text-blue-700'
+                      : 'border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900'
                   }`}
                 >
                   <span className="capitalize">{role.name}</span>
-                  <span className="text-xs text-slate-400">
-                    {role.userCount} {role.userCount === 1 ? 'user' : 'users'}
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      active ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {role.userCount}
                   </span>
                 </button>
-              </li>
-            ))}
+              )
+            })}
             {adding && (
-              <li>
-                <span className="block rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">New role</span>
-              </li>
+              <span
+                role="tab"
+                aria-selected
+                className="shrink-0 border-b-2 border-blue-600 px-4 py-2.5 text-sm font-medium text-blue-700"
+              >
+                New role
+              </span>
             )}
-          </ul>
+          </div>
 
           {draft && catalog ? (
             <div className="space-y-5">

@@ -93,7 +93,10 @@ public class SupplierServiceImpl implements SupplierService {
         return toResponses(List.of(supplier)).getFirst();
     }
 
-    /** Soft delete: the supplier and its product links stay in the table with isActive = false. */
+    /**
+     * Soft delete: the supplier stays in the table with isActive = false. Its product links are left alone, so the
+     * products it supplied still list it (marked as deleted).
+     */
     @Transactional
     @Override
     public void delete(UUID id) {
@@ -101,7 +104,6 @@ public class SupplierServiceImpl implements SupplierService {
         if (reorders.existsBySupplierIdAndActiveTrueAndStatusIn(id, ReorderStatus.open())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Supplier still has open reorders");
         }
-        links.findAllBySupplierIdAndActiveTrue(id).forEach(link -> link.setActive(false));
         supplier.setActive(false);
         audit.record(AuditAction.DELETE, ENTITY, id);
     }

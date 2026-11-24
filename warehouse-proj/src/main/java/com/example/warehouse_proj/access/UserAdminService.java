@@ -96,14 +96,19 @@ public class UserAdminService {
         return toResponse(user);
     }
 
-    /** Soft delete: the user can no longer sign in. */
+    /**
+     * Soft delete: the user can no longer sign in. Any other account can be deleted; admin accounts never can
+     * (change the person's role first if they should go), so the app can never be left without an admin.
+     */
     @Transactional
     public void delete(UUID id) {
         AppUser user = find(id);
         if (id.equals(currentUserId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "You cannot delete your own account");
         }
-        requireAnotherAdminRemains(user);
+        if (user.getRole() != null && user.getRole().isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Admin accounts cannot be deleted");
+        }
         user.setActive(false);
         user.setRefreshToken(null);
         user.setRefreshTokenExpiresAt(null);

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,9 +29,10 @@ public class CategoryController {
         this.service = service;
     }
 
+    /** Optionally include soft-deleted categories: GET /api/categories?includeInactive=true */
     @GetMapping
-    public List<CategoryDtos.Response> list() {
-        return service.list();
+    public List<CategoryDtos.Response> list(@RequestParam(defaultValue = "false") boolean includeInactive) {
+        return service.list(includeInactive);
     }
 
     /** Paged: GET /api/categories/page?page=0&size=20&sortBy=name&direction=asc */
