@@ -19,6 +19,8 @@ public class HowSoldService {
 
     private static final String ENTITY = "HowSold";
     private static final Set<String> SORT_FIELDS = Set.of("name");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "name");
 
     private final HowSoldRepository howSolds;
     private final AuditLogService audit;
@@ -37,7 +39,7 @@ public class HowSoldService {
 
     @Transactional(readOnly = true)
     public PageResponse<HowSoldDtos.Response> page(PageQuery query) {
-        return pagination.page(howSolds, query, SORT_FIELDS, HowSoldDtos.Response::from);
+        return pagination.page(howSolds, query, SORT_FIELDS, SEARCH_FIELDS, HowSoldDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

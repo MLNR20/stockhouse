@@ -15,7 +15,7 @@ export const api = axios.create({ baseURL: API_URL })
 
 /** Endpoints that must not carry a token or trigger a refresh. */
 const isAuthPath = (url?: string) =>
-  !!url && /\/api\/auth\/(login|register|refresh)$/.test(url)
+  !!url && /\/api\/auth\/(login|register|refresh|forgot-password|reset-password)$/.test(url)
 
 let refreshing: Promise<string | null> | null = null
 

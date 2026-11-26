@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import axios from 'axios'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth.ts'
 import { loginInputSchema } from '../schemas/auth.ts'
+import { apiErrorMessage } from '../utils/apiError.ts'
 
 type FieldErrors = Partial<Record<'email' | 'password', string>>
 
@@ -45,7 +46,9 @@ export default function Login() {
       setFormError(
         status === 400 || status === 401
           ? 'Incorrect email or password.'
-          : 'Could not reach the server. Please try again.',
+          : status === 429
+            ? apiErrorMessage(err)
+            : 'Could not reach the server. Please try again.',
       )
     } finally {
       setSubmitting(false)
@@ -64,7 +67,7 @@ export default function Login() {
       >
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Sign in</h1>
-          <p className="mt-1 text-sm text-slate-500">Welcome back to Warehouse.</p>
+          <p className="mt-1 text-sm text-slate-500">Welcome back to Stockwise.</p>
         </div>
 
         {formError && (
@@ -108,6 +111,12 @@ export default function Login() {
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
+
+        <p className="text-center text-sm">
+          <Link to="/forgot-password" className="font-medium text-blue-600 hover:underline">
+            Forgot your password?
+          </Link>
+        </p>
       </form>
     </div>
   )

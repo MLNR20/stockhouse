@@ -54,7 +54,7 @@ import java.util.Random;
  * Turn it off with {@code app.seed.enabled=false} (env SEED_DATA=false).
  *
  * <p>Writes through the repositories, so no audit rows or notifications are created, and it adds no
- * users: register through /api/auth/register.
+ * users: the first admin comes from ADMIN_EMAIL / ADMIN_PASSWORD (see AccessBootstrap).
  */
 @Component
 @Order(1)

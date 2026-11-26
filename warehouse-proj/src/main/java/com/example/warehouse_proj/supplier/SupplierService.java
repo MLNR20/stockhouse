@@ -27,6 +27,8 @@ public class SupplierService {
 
     private static final String ENTITY = "Supplier";
     private static final Set<String> SORT_FIELDS = Set.of("supplierName", "phoneNumber", "email");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "supplierName", "phoneNumber", "email");
 
     private final SupplierRepository suppliers;
     private final ProductRepository products;
@@ -57,7 +59,7 @@ public class SupplierService {
 
     @Transactional(readOnly = true)
     public PageResponse<SupplierDtos.Response> page(PageQuery query) {
-        Page<Supplier> result = suppliers.findAllByActiveTrue(pagination.toPageable(query, SORT_FIELDS));
+        Page<Supplier> result = pagination.find(suppliers, query, SORT_FIELDS, SEARCH_FIELDS);
         Map<UUID, Set<UUID>> productIds = productIdsBySupplier(result.getContent());
         return PageResponse.of(result, s -> SupplierDtos.Response.from(s, productIds.getOrDefault(s.getId(), Set.of())));
     }

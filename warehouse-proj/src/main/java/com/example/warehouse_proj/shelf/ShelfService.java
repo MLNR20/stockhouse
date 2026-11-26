@@ -22,6 +22,8 @@ public class ShelfService {
 
     private static final String ENTITY = "Shelf";
     private static final Set<String> SORT_FIELDS = Set.of("name");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "name", "aisle.name", "aisle.warehouse.name");
 
     private final ShelfRepository shelves;
     private final AisleRepository aisles;
@@ -52,7 +54,7 @@ public class ShelfService {
 
     @Transactional(readOnly = true)
     public PageResponse<ShelfDtos.Response> page(PageQuery query) {
-        return pagination.page(shelves, query, SORT_FIELDS, ShelfDtos.Response::from);
+        return pagination.page(shelves, query, SORT_FIELDS, SEARCH_FIELDS, ShelfDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

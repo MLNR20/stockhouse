@@ -1,3 +1,5 @@
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth.ts'
 import { usePermissions } from '../auth/usePermissions.ts'
 import NotificationBell from './NotificationBell.tsx'
@@ -24,6 +26,14 @@ export default function Navbar({ onMenuClick, onToggleCollapse, collapsed }: Nav
   const { user } = useAuth()
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
   const initial = (user?.firstName || user?.email || 'U').charAt(0).toUpperCase()
+  const navigate = useNavigate()
+  const [term, setTerm] = useState('')
+
+  function submitSearch(event: FormEvent) {
+    event.preventDefault()
+    const query = term.trim()
+    if (query) navigate(`/search?q=${encodeURIComponent(query)}`)
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
@@ -56,11 +66,22 @@ export default function Navbar({ onMenuClick, onToggleCollapse, collapsed }: Nav
             {role}
           </span>
         )}
-        <input
-          type="search"
-          placeholder="Search…"
-          className="hidden w-56 rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:block"
-        />
+        <form onSubmit={submitSearch} role="search" className="hidden sm:block">
+          <input
+            type="search"
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            aria-label="Search"
+            placeholder="Search…"
+            className="w-56 rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          />
+        </form>
+        {/* Small screens have no room for the box: this opens the Search page, which has its own. */}
+        <Link to="/search" aria-label="Search" className={`${buttonClass} sm:hidden`}>
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+          </svg>
+        </Link>
         <NotificationBell />
         <div
           className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white"

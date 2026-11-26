@@ -1,9 +1,9 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import type { Resource } from '../auth/permissions.ts'
 import { usePermissions } from '../auth/usePermissions.ts'
-import { useCrud } from '../hooks/useCrud.ts'
+import { usePagedCrud } from '../hooks/usePagedCrud.ts'
 import { formatDateTime } from '../utils/format.ts'
 import DataTable, { type Column } from './DataTable.tsx'
 import EntityFormModal, { type FieldConfig } from './EntityFormModal.tsx'
@@ -55,6 +55,8 @@ type CrudPageProps<T extends { id: string | number }, TValues extends Record<str
   timestamps?: boolean
   /** Shown above the table, e.g. a hint that a prerequisite record is missing. */
   notice?: ReactNode
+  /** Change this number to reload the current page (e.g. after editing a row's related records). */
+  refreshKey?: number
   /** Hides Delete on rows that must never be deleted (e.g. admin accounts). Default: every row can be. */
   canDeleteRow?: (item: T) => boolean
   /** When set, "Add" opens this page (e.g. '/orders/new') instead of the pop-up form. */
@@ -89,9 +91,27 @@ export default function CrudPage<
   notice,
   addTo,
   canDeleteRow,
+  refreshKey,
   rowActions,
 }: CrudPageProps<T, TValues, TInput>) {
-  const { items, loading, error, create, update, remove } = useCrud<T, TInput>(resource, { schema })
+  // A link such as /products?q=mouse (from the Search page) opens the list already searched.
+  const query = useSearchParams()[0].get('q') ?? ''
+  const { items, loading, error, create, update, remove, reload, paging } = usePagedCrud<T, TInput>(
+    resource,
+    schema,
+    query,
+  )
+
+  const { onSearchChange } = paging
+  useEffect(() => {
+    onSearchChange(query)
+  }, [query, onSearchChange])
+
+  useEffect(() => {
+    if (refreshKey) void reload()
+    // Only a new key should reload here; paging changes already reload by themselves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey])
 
   // The page's own columns, then Created and Updated (every record has both).
   const allColumns = useMemo(
@@ -151,7 +171,9 @@ export default function CrudPage<
             columns={allColumns}
             data={items}
             rowKey={(item) => item.id}
-            loading={loading}
+            server={paging}
+            // Keep the rows on screen while the next page is fetched.
+            loading={loading && items.length === 0}
             searchPlaceholder={searchPlaceholder}
             actions={
               rowActions || canUpdate || canDelete

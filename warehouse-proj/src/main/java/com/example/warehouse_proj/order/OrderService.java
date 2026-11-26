@@ -25,6 +25,8 @@ public class OrderService {
 
     private static final String ENTITY = "Order";
     private static final Set<String> SORT_FIELDS = Set.of("totalPrice", "targetDeliveryDate", "status");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "id", "customer.firstName", "customer.lastName", "status", "targetDeliveryDate");
 
     private final OrderRepository orders;
     private final CustomerRepository customers;
@@ -61,7 +63,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public PageResponse<OrderDtos.Response> page(PageQuery query) {
-        return pagination.page(orders, query, SORT_FIELDS, OrderDtos.Response::from);
+        return pagination.page(orders, query, SORT_FIELDS, SEARCH_FIELDS, OrderDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

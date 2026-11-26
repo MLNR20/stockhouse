@@ -48,14 +48,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
-                        // Error dispatches (409, 400, ...) re-enter the chain; without this they all turn into 401.
-                        .requestMatchers("/error").permitAll()
-                        // WebSocket handshake carries no Authorization header from browsers; the JWT is
-                        // checked on the STOMP CONNECT frame instead (StompAuthChannelInterceptor).
-                        .requestMatchers("/ws/**").permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(ApiPermissions::apply)
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 // Not a @Component on purpose: Boot would also register it as a plain servlet filter.
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService, accessService),

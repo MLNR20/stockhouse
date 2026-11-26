@@ -30,6 +30,8 @@ public class ProductService {
 
     private static final String ENTITY = "Product";
     private static final Set<String> SORT_FIELDS = Set.of("name", "basePrice");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "name", "category.name");
 
     private final ProductRepository products;
     private final CategoryRepository categories;
@@ -66,7 +68,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public PageResponse<ProductDtos.Response> page(PageQuery query) {
-        Page<Product> result = products.findAllByActiveTrue(pagination.toPageable(query, SORT_FIELDS));
+        Page<Product> result = pagination.find(products, query, SORT_FIELDS, SEARCH_FIELDS);
         Map<UUID, List<ProductDtos.SupplierRef>> suppliers = suppliersByProduct(result.getContent());
         return PageResponse.of(result, p -> ProductDtos.Response.from(p, suppliers.getOrDefault(p.getId(), List.of())));
     }

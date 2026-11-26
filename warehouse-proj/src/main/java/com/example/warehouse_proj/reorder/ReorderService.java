@@ -32,6 +32,8 @@ public class ReorderService {
 
     private static final String ENTITY = "Reorder";
     private static final Set<String> SORT_FIELDS = Set.of("quantity", "expectedDate", "status");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "product.name", "supplier.supplierName", "status");
 
     private final ReorderRepository reorders;
     private final SupplierRepository suppliers;
@@ -83,7 +85,7 @@ public class ReorderService {
 
     @Transactional(readOnly = true)
     public PageResponse<ReorderDtos.Response> page(PageQuery query) {
-        return pagination.page(reorders, query, SORT_FIELDS, ReorderDtos.Response::from);
+        return pagination.page(reorders, query, SORT_FIELDS, SEARCH_FIELDS, ReorderDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

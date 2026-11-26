@@ -38,6 +38,8 @@ public class OrderDetailService {
 
     private static final String ENTITY = "OrderDetail";
     private static final Set<String> SORT_FIELDS = Set.of("quantity", "salesPrice");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "product.name");
 
     private final OrderDetailRepository details;
     private final OrderRepository orders;
@@ -75,7 +77,7 @@ public class OrderDetailService {
 
     @Transactional(readOnly = true)
     public PageResponse<OrderDetailDtos.Response> page(PageQuery query) {
-        Page<OrderDetail> result = details.findAllByActiveTrue(pagination.toPageable(query, SORT_FIELDS));
+        Page<OrderDetail> result = pagination.find(details, query, SORT_FIELDS, SEARCH_FIELDS);
         Resolver resolver = resolverFor(result.getContent());
         return PageResponse.of(result, resolver::response);
     }

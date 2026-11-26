@@ -28,7 +28,8 @@ class UserAdminServiceTests {
     void setUp() {
         users = mock(AppUserRepository.class);
         service = new UserAdminService(
-                users, mock(RoleRepository.class), mock(PasswordEncoder.class), mock(AuditLogService.class));
+                users, mock(RoleRepository.class), mock(PasswordEncoder.class), mock(AuditLogService.class),
+                new com.example.warehouse_proj.common.PaginationService());
     }
 
     private AppUser userWithRole(String roleName, boolean system) {

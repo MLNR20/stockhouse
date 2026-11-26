@@ -23,6 +23,8 @@ public class ContainerService {
 
     private static final String ENTITY = "Container";
     private static final Set<String> SORT_FIELDS = Set.of("name");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "name", "shelfRow.name", "shelfRow.shelf.name");
 
     private final ContainerRepository containers;
     private final ContainerProductRepository contents;
@@ -56,7 +58,7 @@ public class ContainerService {
 
     @Transactional(readOnly = true)
     public PageResponse<ContainerDtos.Response> page(PageQuery query) {
-        return pagination.page(containers, query, SORT_FIELDS, ContainerDtos.Response::from);
+        return pagination.page(containers, query, SORT_FIELDS, SEARCH_FIELDS, ContainerDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

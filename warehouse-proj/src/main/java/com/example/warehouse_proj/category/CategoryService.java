@@ -19,6 +19,8 @@ public class CategoryService {
 
     private static final String ENTITY = "Category";
     private static final Set<String> SORT_FIELDS = Set.of("name", "description");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "name", "description");
 
     private final CategoryRepository categories;
     private final AuditLogService audit;
@@ -43,7 +45,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public PageResponse<CategoryDtos.Response> page(PageQuery query) {
-        return pagination.page(categories, query, SORT_FIELDS, CategoryDtos.Response::from);
+        return pagination.page(categories, query, SORT_FIELDS, SEARCH_FIELDS, CategoryDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

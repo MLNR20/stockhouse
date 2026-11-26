@@ -21,6 +21,8 @@ public class HowSoldConversionService {
 
     private static final String ENTITY = "HowSoldConversion";
     private static final Set<String> SORT_FIELDS = Set.of("unitConversion");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "parentHowSold.name", "childHowSold.name", "product.name");
 
     private final HowSoldConversionRepository conversions;
     private final HowSoldRepository howSolds;
@@ -52,7 +54,7 @@ public class HowSoldConversionService {
 
     @Transactional(readOnly = true)
     public PageResponse<HowSoldConversionDtos.Response> page(PageQuery query) {
-        return pagination.page(conversions, query, SORT_FIELDS, HowSoldConversionDtos.Response::from);
+        return pagination.page(conversions, query, SORT_FIELDS, SEARCH_FIELDS, HowSoldConversionDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

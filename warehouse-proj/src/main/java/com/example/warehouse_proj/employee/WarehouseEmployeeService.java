@@ -22,6 +22,8 @@ public class WarehouseEmployeeService {
 
     private static final String ENTITY = "WarehouseEmployee";
     private static final Set<String> SORT_FIELDS = Set.of("firstName", "lastName", "email", "phoneNumber");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "firstName", "lastName", "email", "phoneNumber", "warehouse.name");
 
     private final WarehouseEmployeeRepository employees;
     private final WarehouseRepository warehouses;
@@ -52,7 +54,7 @@ public class WarehouseEmployeeService {
 
     @Transactional(readOnly = true)
     public PageResponse<WarehouseEmployeeDtos.Response> page(PageQuery query) {
-        return pagination.page(employees, query, SORT_FIELDS, WarehouseEmployeeDtos.Response::from);
+        return pagination.page(employees, query, SORT_FIELDS, SEARCH_FIELDS, WarehouseEmployeeDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

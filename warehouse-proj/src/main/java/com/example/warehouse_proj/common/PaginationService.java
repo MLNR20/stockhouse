@@ -1,5 +1,18 @@
 package com.example.warehouse_proj.common;
 
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Arrays;
+import java.util.ArrayList;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaExpression;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,14 +40,85 @@ public class PaginationService {
     /** Sort fields every BaseEntity supports; entity-specific ones are passed in per call. */
     public static final Set<String> BASE_SORT_FIELDS = Set.of("createdAt", "updatedAt");
 
-    /** Active rows of {@code repository}, paged, sorted and mapped to a response DTO. */
+    /** Longer search texts are cut to this many words. */
+    private static final int MAX_SEARCH_WORDS = 6;
+
+    /** Active rows of {@code repository}, searched, paged, sorted and mapped to a response DTO. */
     public <T extends BaseEntity, R> PageResponse<R> page(
             BaseRepository<T> repository,
             PageQuery query,
             Set<String> allowedSortFields,
+            List<String> searchFields,
             Function<T, R> mapper) {
-        Page<T> result = repository.findAllByActiveTrue(toPageable(query, allowedSortFields));
-        return PageResponse.of(result, mapper);
+        return PageResponse.of(find(repository, query, allowedSortFields, searchFields), mapper);
+    }
+
+    /**
+     * One page of active rows. With a search text, only rows where every word appears (ignoring case) in at least
+     * one of {@code searchFields}; a field may reach into a related record, e.g. "supplier.supplierName".
+     */
+    public <T extends BaseEntity> Page<T> find(
+            BaseRepository<T> repository,
+            PageQuery query,
+            Set<String> allowedSortFields,
+            List<String> searchFields) {
+        Pageable pageable = toPageable(query, allowedSortFields);
+        List<String> words = searchWords(query.search());
+        if (words.isEmpty() || searchFields.isEmpty()) {
+            return repository.findAllByActiveTrue(pageable);
+        }
+        Specification<T> matching = (root, criteria, cb) -> {
+            List<Predicate> all = new ArrayList<>();
+            all.add(cb.isTrue(root.get("active")));
+            // One left join per relation, shared by all words and fields.
+            Map<String, From<?, ?>> joins = new HashMap<>();
+            for (String word : words) {
+                String like = "%" + escapeLike(word) + "%";
+                Predicate[] any = searchFields.stream()
+                        .map(field -> cb.like(cb.lower(asText(cb, path(root, field, joins))), like, '!'))
+                        .toArray(Predicate[]::new);
+                all.add(cb.or(any));
+            }
+            return cb.and(all.toArray(Predicate[]::new));
+        };
+        return repository.findAll(matching, pageable);
+    }
+
+    static List<String> searchWords(String search) {
+        if (search == null || search.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(search.trim().toLowerCase().split("\\s+")).limit(MAX_SEARCH_WORDS).toList();
+    }
+
+    /** So that a typed % or _ is looked for literally. */
+    static String escapeLike(String word) {
+        return word.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+    }
+
+    /**
+     * The value as text in the database. Ids, dates, numbers and enums need a real SQL cast (JPA's as() only
+     * changes the Java type, and the database has no lower(uuid) or lower(date)).
+     */
+    @SuppressWarnings("unchecked")
+    private static Expression<String> asText(CriteriaBuilder cb, Expression<?> value) {
+        if (value.getJavaType() == String.class) {
+            return (Expression<String>) value;
+        }
+        return ((HibernateCriteriaBuilder) cb).cast((JpaExpression<?>) value, String.class);
+    }
+
+    private static Expression<?> path(From<?, ?> root, String field, Map<String, From<?, ?>> joins) {
+        String[] parts = field.split("\\.");
+        From<?, ?> from = root;
+        StringBuilder walked = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            walked.append(parts[i]).append('.');
+            From<?, ?> parent = from;
+            String part = parts[i];
+            from = joins.computeIfAbsent(walked.toString(), key -> parent.join(part, JoinType.LEFT));
+        }
+        return from.get(parts[parts.length - 1]);
     }
 
     private static Sort.Direction parseDirection(String value) {

@@ -1,5 +1,9 @@
 package com.example.warehouse_proj.access;
 
+import java.util.Set;
+import com.example.warehouse_proj.common.PaginationService;
+import com.example.warehouse_proj.common.PageResponse;
+import com.example.warehouse_proj.common.PageQuery;
 import com.example.warehouse_proj.access.AccessDtos.UserRequest;
 import com.example.warehouse_proj.access.AccessDtos.UserResponse;
 import com.example.warehouse_proj.audit.AuditAction;
@@ -22,14 +26,22 @@ import java.util.UUID;
 public class UserAdminService {
 
     private static final String ENTITY = "User";
+    private static final Set<String> SORT_FIELDS = Set.of("firstName", "lastName", "email");
+    private static final List<String> SEARCH_FIELDS = List.of("firstName", "lastName", "email", "role.name");
 
     private final AppUserRepository users;
     private final RoleRepository roles;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService audit;
+    private final PaginationService pagination;
 
     public UserAdminService(
-            AppUserRepository users, RoleRepository roles, PasswordEncoder passwordEncoder, AuditLogService audit) {
+            AppUserRepository users,
+            RoleRepository roles,
+            PasswordEncoder passwordEncoder,
+            AuditLogService audit,
+            PaginationService pagination) {
+        this.pagination = pagination;
         this.users = users;
         this.roles = roles;
         this.passwordEncoder = passwordEncoder;
@@ -42,6 +54,11 @@ public class UserAdminService {
                 .sorted(Comparator.comparing(AppUser::getEmail, String.CASE_INSENSITIVE_ORDER))
                 .map(UserAdminService::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<UserResponse> page(PageQuery query) {
+        return pagination.page(users, query, SORT_FIELDS, SEARCH_FIELDS, UserAdminService::toResponse);
     }
 
     @Transactional

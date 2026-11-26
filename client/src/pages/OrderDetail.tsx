@@ -87,7 +87,8 @@ export default function OrderDetail() {
         <StatusBadge status={order.status} />
       </div>
 
-      <dl className="mb-8 grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-5 text-sm sm:grid-cols-4">
+      <hr className="border-slate-200" />
+      <dl className="grid grid-cols-2 gap-4 py-5 text-sm sm:grid-cols-4">
         <div>
           <dt className="text-slate-500">Customer</dt>
           <dd className="mt-1 font-medium text-slate-900">{customerName}</dd>
@@ -110,6 +111,7 @@ export default function OrderDetail() {
           </dd>
         </div>
       </dl>
+      <hr className="mb-8 border-slate-200" />
 
       <h2 className="mb-4 text-lg font-semibold text-slate-900">Items</h2>
       <OrderLines key={order.id} order={order} products={products} units={units} canEdit={can('orders:update')} />

@@ -9,6 +9,7 @@ import com.example.warehouse_proj.identity.AppUser;
 import com.example.warehouse_proj.identity.AppUserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.HexFormat;
 import java.util.UUID;
 
 @Service
@@ -29,17 +28,28 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RoleRepository roles;
+    private final boolean registrationEnabled;
 
     public AuthService(
-            AppUserRepository users, PasswordEncoder passwordEncoder, JwtService jwtService, RoleRepository roles) {
+            AppUserRepository users,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            RoleRepository roles,
+            @Value("${app.auth.registration-enabled:false}") boolean registrationEnabled) {
+        this.registrationEnabled = registrationEnabled;
         this.roles = roles;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
+    /** Self-registration is off unless app.auth.registration-enabled is set; admins add users instead. */
     @Transactional
     public TokenResponse register(RegisterRequest request) {
+        if (!registrationEnabled) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Registration is closed. Ask an administrator to create your account.");
+        }
         String email = request.email().trim().toLowerCase();
         if (users.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
@@ -107,11 +117,6 @@ public class AuthService {
     }
 
     private static String hash(String token) {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+        return TokenHashes.sha256(token);
     }
 }

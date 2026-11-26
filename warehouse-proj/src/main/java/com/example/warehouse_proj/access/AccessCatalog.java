@@ -18,7 +18,7 @@ public final class AccessCatalog {
     /** Resources that a permission is about, in display order. */
     public static final List<String> RESOURCES = List.of(
             "dashboard", "inventory", "units", "orders", "suppliers", "products", "aisles", "trucks",
-            "shipments", "employees", "reorders", "history", "categories", "warehouses", "shelves", "users", "roles",
+            "shipments", "employees", "reorders", "history", "categories", "warehouses", "shelves", "customers", "users", "roles",
             "pages");
 
     public record Page(String path, String label, String section) {
@@ -28,6 +28,7 @@ public final class AccessCatalog {
     public static final List<Page> PAGES = List.of(
             new Page("/", "Dashboard", "Overview"),
             new Page("/history", "History", "Overview"),
+            new Page("/reports", "Reports", "Overview"),
             new Page("/products", "Products", "Catalog"),
             new Page("/categories", "Categories", "Catalog"),
             new Page("/units", "Units of Measure (How Sold)", "Catalog"),
@@ -38,7 +39,10 @@ public final class AccessCatalog {
             new Page("/warehouses", "Warehouses", "Storage Layout"),
             new Page("/aisles", "Aisles", "Storage Layout"),
             new Page("/shelves", "Shelves", "Storage Layout"),
+            new Page("/rows", "Shelf Rows", "Storage Layout"),
+            new Page("/containers", "Containers", "Storage Layout"),
             new Page("/orders", "Orders", "Sales & Supply"),
+            new Page("/customers", "Customers", "Sales & Supply"),
             new Page("/shipments", "Shipments", "Sales & Supply"),
             new Page("/trucks", "Trucks", "Sales & Supply"),
             new Page("/suppliers", "Suppliers", "Sales & Supply"),
@@ -94,7 +98,7 @@ public final class AccessCatalog {
 
     private static final List<String> OPERATIONS = List.of(
             "dashboard", "inventory", "units", "orders", "suppliers", "products", "aisles", "trucks",
-            "shipments", "employees", "reorders", "history", "categories", "warehouses", "shelves");
+            "shipments", "employees", "reorders", "history", "categories", "warehouses", "shelves", "customers");
 
     /** The standard roles, created on first start. */
     public static List<RoleDefinition> standardRoles() {
@@ -106,7 +110,7 @@ public final class AccessCatalog {
         Set<String> manager = new LinkedHashSet<>(grant(OPERATIONS, List.of("view")));
         manager.addAll(grant(
                 List.of("inventory", "units", "orders", "suppliers", "products", "categories", "warehouses", "aisles",
-                        "shelves", "trucks", "shipments", "employees", "reorders"),
+                        "shelves", "trucks", "shipments", "employees", "reorders", "customers"),
                 List.of("create", "update")));
         manager.addAll(grant(List.of("inventory", "orders"), List.of("delete")));
         roles.put(MANAGER, new RoleDefinition(MANAGER, "Runs day-to-day operations", manager,
@@ -114,14 +118,14 @@ public final class AccessCatalog {
 
         // Staff and viewers cannot see the employee list or the user history.
         List<String> floor = List.of("dashboard", "inventory", "units", "orders", "products", "categories", "warehouses",
-                "aisles", "shelves", "trucks", "shipments", "reorders");
+                "aisles", "shelves", "trucks", "shipments", "reorders", "customers");
         Set<String> staff = new LinkedHashSet<>(grant(floor, List.of("view")));
-        staff.addAll(grant(List.of("inventory", "orders", "shipments", "reorders"), List.of("create", "update")));
+        staff.addAll(grant(List.of("inventory", "orders", "shipments", "reorders", "customers"), List.of("create", "update")));
         roles.put(STAFF, new RoleDefinition(STAFF, "Handles stock, orders and shipments", staff,
-                pagesWithout("/access/", "/employees", "/history", "/suppliers")));
+                pagesWithout("/access/", "/employees", "/history", "/suppliers", "/reports")));
 
         roles.put(VIEWER, new RoleDefinition(VIEWER, "Read-only access", grant(floor, List.of("view")),
-                pagesWithout("/access/", "/employees", "/history", "/suppliers")));
+                pagesWithout("/access/", "/employees", "/history", "/suppliers", "/reports")));
 
         return new ArrayList<>(roles.values());
     }

@@ -7,8 +7,11 @@ import AccessRoles from './pages/AccessRoles.tsx'
 import AccessUsers from './pages/AccessUsers.tsx'
 import Aisles from './pages/Aisles.tsx'
 import Categories from './pages/Categories.tsx'
+import Containers from './pages/Containers.tsx'
+import Customers from './pages/Customers.tsx'
 import Employees from './pages/Employees.tsx'
 import Forbidden from './pages/Forbidden.tsx'
+import ForgotPassword from './pages/ForgotPassword.tsx'
 import History from './pages/History.tsx'
 import Home from './pages/Home.tsx'
 import Inventory from './pages/Inventory.tsx'
@@ -21,6 +24,10 @@ import Products from './pages/Products.tsx'
 import ReorderDetail from './pages/ReorderDetail.tsx'
 import ReorderNew from './pages/ReorderNew.tsx'
 import Reorders from './pages/Reorders.tsx'
+import Reports from './pages/Reports.tsx'
+import ResetPassword from './pages/ResetPassword.tsx'
+import Search from './pages/Search.tsx'
+import ShelfRows from './pages/ShelfRows.tsx'
 import Shelves from './pages/Shelves.tsx'
 import Shipments from './pages/Shipments.tsx'
 import Suppliers from './pages/Suppliers.tsx'
@@ -38,6 +45,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
           <Route element={<RequirePage />}>
@@ -57,6 +66,11 @@ export default function App() {
             <Route path="/warehouses" element={<Warehouses />} />
             <Route path="/aisles" element={<Aisles />} />
             <Route path="/shelves" element={<Shelves />} />
+            <Route path="/rows" element={<ShelfRows />} />
+            <Route path="/containers" element={<Containers />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/search" element={<Search />} />
             <Route path="/trucks" element={<Trucks />} />
             <Route path="/shipments" element={<Shipments />} />
             <Route path="/employees" element={<Employees />} />

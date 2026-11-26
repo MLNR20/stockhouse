@@ -23,6 +23,14 @@ public final class AuthDtos {
     public record LoginRequest(@NotBlank @Email String email, @NotBlank String password) {
     }
 
+    public record ForgotPasswordRequest(@NotBlank @Email @Size(max = 256) String email) {
+    }
+
+    public record ResetPasswordRequest(
+            @NotBlank @Size(max = 200) String token,
+            @NotBlank @Size(min = 8, max = 72) String password) {
+    }
+
     public record RefreshRequest(@NotBlank String refreshToken) {
     }
 

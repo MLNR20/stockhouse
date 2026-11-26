@@ -1,40 +1,9 @@
-import { z } from 'zod'
-import { api } from '../api.ts'
-
-/** Query params sent to the backend. Pages are 1-based. */
-export type PageParams = {
-  page: number
-  pageSize: number
-  search?: string
-}
-
+/** One page of an in-memory list. */
 export type PagedResult<T> = {
   items: T[]
   total: number
   page: number
   pageSize: number
-}
-
-/** Zod schema for a paged response: { items, total, page, pageSize }. Adjust to match your API. */
-export function pagedSchema<T>(item: z.ZodType<T>) {
-  return z.object({
-    items: z.array(item),
-    total: z.number().int().nonnegative(),
-    page: z.number().int().positive(),
-    pageSize: z.number().int().positive(),
-  })
-}
-
-/** Server-side pagination: GET {resource}?page=&pageSize=&search= */
-export async function fetchPage<T>(
-  resource: string,
-  { page, pageSize, search }: PageParams,
-  schema?: z.ZodType<T>,
-): Promise<PagedResult<T>> {
-  const { data } = await api.get(resource, {
-    params: { page, pageSize, search: search?.trim() || undefined },
-  })
-  return schema ? pagedSchema(schema).parse(data) : (data as PagedResult<T>)
 }
 
 /** Client-side pagination of an in-memory list. Pages are 1-based; out-of-range pages are clamped. */

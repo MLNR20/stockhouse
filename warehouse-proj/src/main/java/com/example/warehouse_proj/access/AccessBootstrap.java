@@ -5,9 +5,11 @@ import com.example.warehouse_proj.identity.AppUser;
 import com.example.warehouse_proj.identity.AppUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -30,10 +32,40 @@ public class AccessBootstrap implements ApplicationRunner {
     private final RoleRepository roles;
     private final AppUserRepository users;
 
-    public AccessBootstrap(TransactionTemplate tx, RoleRepository roles, AppUserRepository users) {
+    private final PasswordEncoder passwordEncoder;
+    private final String adminEmail;
+    private final String adminPassword;
+
+    public AccessBootstrap(
+            TransactionTemplate tx,
+            RoleRepository roles,
+            AppUserRepository users,
+            PasswordEncoder passwordEncoder,
+            @Value("${app.admin.email:}") String adminEmail,
+            @Value("${app.admin.password:}") String adminPassword) {
+        this.passwordEncoder = passwordEncoder;
+        this.adminEmail = adminEmail;
+        this.adminPassword = adminPassword;
         this.tx = tx;
         this.roles = roles;
         this.users = users;
+    }
+
+    /** On an empty database, creates the first admin from ADMIN_EMAIL / ADMIN_PASSWORD. */
+    private void createFirstAdmin(Role admin) {
+        if (users.count() > 0) {
+            return;
+        }
+        if (adminEmail.isBlank() || adminPassword.length() < 8) {
+            log.warn("There are no users yet. Set ADMIN_EMAIL and ADMIN_PASSWORD (8+ characters) and restart "
+                    + "to create the first admin.");
+            return;
+        }
+        AppUser first = new AppUser("Admin", "User", adminEmail.trim().toLowerCase(),
+                passwordEncoder.encode(adminPassword));
+        first.setRole(admin);
+        users.save(first);
+        log.info("Created the first admin account from ADMIN_EMAIL");
     }
 
     @Override
@@ -57,6 +89,8 @@ public class AccessBootstrap implements ApplicationRunner {
                 admin.getPages().addAll(AccessCatalog.allPagePaths());
                 roles.save(admin);
             }
+            createFirstAdmin(admin);
+
             List<AppUser> withoutRole = users.findAll().stream().filter(u -> u.getRole() == null).toList();
             for (AppUser user : withoutRole) {
                 user.setRole(admin);

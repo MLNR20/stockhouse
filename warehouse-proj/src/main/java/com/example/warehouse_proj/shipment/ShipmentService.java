@@ -27,6 +27,8 @@ public class ShipmentService {
 
     private static final String ENTITY = "Shipment";
     private static final Set<String> SORT_FIELDS = Set.of("scheduledDate", "status");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "status", "scheduledDate", "truck.plateNumber", "employee.firstName", "employee.lastName", "customerOrder.customer.firstName", "customerOrder.customer.lastName");
 
     private final ShipmentRepository shipments;
     private final OrderRepository orders;
@@ -69,7 +71,7 @@ public class ShipmentService {
 
     @Transactional(readOnly = true)
     public PageResponse<ShipmentDtos.Response> page(PageQuery query) {
-        return pagination.page(shipments, query, SORT_FIELDS, ShipmentDtos.Response::from);
+        return pagination.page(shipments, query, SORT_FIELDS, SEARCH_FIELDS, ShipmentDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

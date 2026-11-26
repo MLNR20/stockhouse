@@ -25,6 +25,8 @@ public class InventoryService {
 
     private static final String ENTITY = "Inventory";
     private static final Set<String> SORT_FIELDS = Set.of("status", "baseQuantity", "minimumThreshold");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "product.name", "howSold.name", "status");
 
     private final InventoryRepository inventories;
     private final ProductRepository products;
@@ -58,7 +60,7 @@ public class InventoryService {
 
     @Transactional(readOnly = true)
     public PageResponse<InventoryDtos.Response> page(PageQuery query) {
-        return pagination.page(inventories, query, SORT_FIELDS, InventoryDtos.Response::from);
+        return pagination.page(inventories, query, SORT_FIELDS, SEARCH_FIELDS, InventoryDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

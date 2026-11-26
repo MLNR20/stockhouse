@@ -51,6 +51,15 @@ const sections: NavSection[] = [
         ),
       },
       {
+        to: '/reports',
+        label: 'Reports',
+        icon: (
+          <Icon>
+            <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M12 11v6M9 14l3 3 3-3" />
+          </Icon>
+        ),
+      },
+      {
         to: '/history',
         label: 'History',
         icon: (
@@ -167,6 +176,24 @@ const sections: NavSection[] = [
               </Icon>
             ),
           },
+          {
+            to: '/rows',
+            label: 'Shelf Rows',
+            icon: (
+              <Icon>
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </Icon>
+            ),
+          },
+          {
+            to: '/containers',
+            label: 'Containers',
+            icon: (
+              <Icon>
+                <path d="M3 7h18v12H3zM3 7l2-3h14l2 3M9 11v4M15 11v4" />
+              </Icon>
+            ),
+          },
         ],
       },
     ],
@@ -180,6 +207,15 @@ const sections: NavSection[] = [
         icon: (
           <Icon>
             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6M9 12h6M9 16h4" />
+          </Icon>
+        ),
+      },
+      {
+        to: '/customers',
+        label: 'Customers',
+        icon: (
+          <Icon>
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" />
           </Icon>
         ),
       },

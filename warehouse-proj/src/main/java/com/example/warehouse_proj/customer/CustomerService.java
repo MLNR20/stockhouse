@@ -19,6 +19,8 @@ public class CustomerService {
 
     private static final String ENTITY = "Customer";
     private static final Set<String> SORT_FIELDS = Set.of("firstName", "lastName", "email", "phoneNumber", "address");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "firstName", "lastName", "email", "phoneNumber", "address");
 
     private final CustomerRepository customers;
     private final AuditLogService audit;
@@ -37,7 +39,7 @@ public class CustomerService {
 
     @Transactional(readOnly = true)
     public PageResponse<CustomerDtos.Response> page(PageQuery query) {
-        return pagination.page(customers, query, SORT_FIELDS, CustomerDtos.Response::from);
+        return pagination.page(customers, query, SORT_FIELDS, SEARCH_FIELDS, CustomerDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

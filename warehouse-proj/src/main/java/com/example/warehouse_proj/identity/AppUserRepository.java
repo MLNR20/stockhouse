@@ -11,6 +11,8 @@ public interface AppUserRepository extends BaseRepository<AppUser> {
 
     boolean existsByEmailIgnoreCase(String email);
 
+    Optional<AppUser> findByResetTokenHash(String resetTokenHash);
+
     /** Any user, active or not: a role still referenced cannot be deleted. */
     boolean existsByRoleId(UUID roleId);
 

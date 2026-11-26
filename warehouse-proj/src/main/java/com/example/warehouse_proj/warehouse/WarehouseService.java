@@ -48,7 +48,7 @@ public class WarehouseService {
 
     @Transactional(readOnly = true)
     public PageResponse<WarehouseDtos.Response> page(PageQuery query) {
-        return pagination.page(warehouses, query, SORT_FIELDS, WarehouseDtos.Response::from);
+        return pagination.page(warehouses, query, SORT_FIELDS, List.of("name"), WarehouseDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

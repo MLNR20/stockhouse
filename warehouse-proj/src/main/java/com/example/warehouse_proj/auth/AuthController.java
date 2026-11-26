@@ -1,12 +1,15 @@
 package com.example.warehouse_proj.auth;
 
 import com.example.warehouse_proj.access.AccessService;
+import com.example.warehouse_proj.auth.AuthDtos.ForgotPasswordRequest;
 import com.example.warehouse_proj.auth.AuthDtos.LoginRequest;
+import com.example.warehouse_proj.auth.AuthDtos.ResetPasswordRequest;
 import com.example.warehouse_proj.auth.AuthDtos.RefreshRequest;
 import com.example.warehouse_proj.auth.AuthDtos.RegisterRequest;
 import com.example.warehouse_proj.auth.AuthDtos.TokenResponse;
 import com.example.warehouse_proj.auth.AuthDtos.UserResponse;
 import com.example.warehouse_proj.identity.AppUserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -26,10 +29,18 @@ public class AuthController {
 
     private final AuthService authService;
     private final AppUserRepository users;
+    private final PasswordResetService passwordReset;
+    private final LoginRateLimiter rateLimiter;
 
-    public AuthController(AuthService authService, AppUserRepository users) {
+    public AuthController(
+            AuthService authService,
+            AppUserRepository users,
+            PasswordResetService passwordReset,
+            LoginRateLimiter rateLimiter) {
         this.authService = authService;
         this.users = users;
+        this.passwordReset = passwordReset;
+        this.rateLimiter = rateLimiter;
     }
 
     @PostMapping("/register")
@@ -38,9 +49,35 @@ public class AuthController {
         return authService.register(request);
     }
 
+    /** Repeated wrong passwords are answered with 429 for a while (see LoginRateLimiter). */
     @PostMapping("/login")
-    public TokenResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public TokenResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+        String address = http.getRemoteAddr();
+        rateLimiter.checkSignIn(request.email(), address);
+        try {
+            TokenResponse tokens = authService.login(request);
+            rateLimiter.signInSucceeded(request.email(), address);
+            return tokens;
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
+                rateLimiter.signInFailed(request.email(), address);
+            }
+            throw e;
+        }
+    }
+
+    /** Always 202, whether or not the account exists, so this cannot be used to discover accounts. */
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request, HttpServletRequest http) {
+        rateLimiter.checkResetRequest(request.email(), http.getRemoteAddr());
+        passwordReset.requestReset(request.email());
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordReset.resetPassword(request.token(), request.password());
     }
 
     @PostMapping("/refresh")

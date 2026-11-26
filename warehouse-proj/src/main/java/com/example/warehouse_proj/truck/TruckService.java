@@ -20,6 +20,8 @@ public class TruckService {
 
     private static final String ENTITY = "Truck";
     private static final Set<String> SORT_FIELDS = Set.of("plateNumber", "model", "capacityKg", "status");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "plateNumber", "model", "status");
 
     private final TruckRepository trucks;
     private final ShipmentRepository shipments;
@@ -44,7 +46,7 @@ public class TruckService {
 
     @Transactional(readOnly = true)
     public PageResponse<TruckDtos.Response> page(PageQuery query) {
-        return pagination.page(trucks, query, SORT_FIELDS, TruckDtos.Response::from);
+        return pagination.page(trucks, query, SORT_FIELDS, SEARCH_FIELDS, TruckDtos.Response::from);
     }
 
     @Transactional(readOnly = true)

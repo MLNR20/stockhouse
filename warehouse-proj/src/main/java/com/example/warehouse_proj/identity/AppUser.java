@@ -35,6 +35,13 @@ public class AppUser extends BaseEntity {
     @Column(name = "refresh_token_expires_at")
     private Instant refreshTokenExpiresAt;
 
+    /** Hash of the pending password-reset token, if one was requested. */
+    @Column(name = "reset_token_hash", length = 64)
+    private String resetTokenHash;
+
+    @Column(name = "reset_token_expires_at")
+    private Instant resetTokenExpiresAt;
+
     /** What the user may do and see. Loaded eagerly: the JWT filter reads it on every request. */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
@@ -96,6 +103,22 @@ public class AppUser extends BaseEntity {
 
     public void setRefreshTokenExpiresAt(Instant refreshTokenExpiresAt) {
         this.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    }
+
+    public String getResetTokenHash() {
+        return resetTokenHash;
+    }
+
+    public void setResetTokenHash(String resetTokenHash) {
+        this.resetTokenHash = resetTokenHash;
+    }
+
+    public Instant getResetTokenExpiresAt() {
+        return resetTokenExpiresAt;
+    }
+
+    public void setResetTokenExpiresAt(Instant resetTokenExpiresAt) {
+        this.resetTokenExpiresAt = resetTokenExpiresAt;
     }
 
     public Role getRole() {

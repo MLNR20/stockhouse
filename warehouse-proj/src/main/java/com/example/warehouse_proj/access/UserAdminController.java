@@ -1,5 +1,8 @@
 package com.example.warehouse_proj.access;
 
+import org.springframework.web.bind.annotation.ModelAttribute;
+import com.example.warehouse_proj.common.PageResponse;
+import com.example.warehouse_proj.common.PageQuery;
 import com.example.warehouse_proj.access.AccessDtos.UserRequest;
 import com.example.warehouse_proj.access.AccessDtos.UserResponse;
 import jakarta.validation.Valid;
@@ -32,6 +35,13 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority('users:view')")
     public List<UserResponse> list() {
         return service.list();
+    }
+
+    /** Paged: GET /api/users/page?page=0&size=10&search=ann */
+    @GetMapping("/page")
+    @PreAuthorize("hasAuthority('users:view')")
+    public PageResponse<UserResponse> page(@ModelAttribute PageQuery query) {
+        return service.page(query);
     }
 
     @PostMapping

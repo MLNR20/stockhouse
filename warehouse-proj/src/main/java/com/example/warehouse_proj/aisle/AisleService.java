@@ -22,6 +22,8 @@ public class AisleService {
 
     private static final String ENTITY = "Aisle";
     private static final Set<String> SORT_FIELDS = Set.of("name");
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "name", "warehouse.name");
 
     private final AisleRepository aisles;
     private final WarehouseRepository warehouses;
@@ -53,7 +55,7 @@ public class AisleService {
 
     @Transactional(readOnly = true)
     public PageResponse<AisleDtos.Response> page(PageQuery query) {
-        return pagination.page(aisles, query, SORT_FIELDS, AisleDtos.Response::from);
+        return pagination.page(aisles, query, SORT_FIELDS, SEARCH_FIELDS, AisleDtos.Response::from);
     }
 
     @Transactional(readOnly = true)
