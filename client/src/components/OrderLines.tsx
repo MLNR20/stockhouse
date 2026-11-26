@@ -13,6 +13,7 @@ import type { UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
 import ComboBox from './ComboBox.tsx'
 import { formatMoney } from '../utils/format.ts'
+import { TableRowsSkeleton } from './Skeleton.tsx'
 
 const emptyForm: OrderDetailFormValues = { productId: '', howSoldId: '', quantity: '1', salesPrice: '' }
 
@@ -368,11 +369,7 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={editable ? 8 : 7} className="px-4 py-8 text-center text-slate-500">
-                  Loading…
-                </td>
-              </tr>
+              <TableRowsSkeleton columns={editable ? 8 : 7} rows={3} />
             ) : lines.length === 0 ? (
               <tr>
                 <td colSpan={editable ? 8 : 7} className="px-4 py-8 text-center text-slate-500">

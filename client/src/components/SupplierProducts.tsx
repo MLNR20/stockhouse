@@ -7,6 +7,7 @@ import { supplierSchema, type Supplier } from '../schemas/supplier.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
 import ComboBox from './ComboBox.tsx'
 import Modal from './Modal.tsx'
+import { ListSkeleton } from './Skeleton.tsx'
 
 type Props = {
   /** The supplier to manage, or null when closed. */
@@ -98,7 +99,7 @@ function Links({ supplier, onChanged }: { supplier: Supplier; onChanged: () => v
       )}
 
       {linked === null ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <ListSkeleton />
       ) : rows.length === 0 ? (
         <p className="text-sm text-slate-500">This supplier has no products yet.</p>
       ) : (

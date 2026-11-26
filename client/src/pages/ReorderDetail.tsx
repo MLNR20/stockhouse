@@ -14,6 +14,7 @@ import { supplierSchema, type Supplier } from '../schemas/supplier.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
 import { formatDate, formatDateTime, formatMoney, shortId } from '../utils/format.ts'
+import { DetailSkeleton } from '../components/Skeleton.tsx'
 
 type LoadState = 'loading' | 'ready' | 'missing' | 'error'
 
@@ -137,11 +138,14 @@ export default function ReorderDetail() {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8">
         {back}
-        <p className="mt-6 text-slate-600">
-          {state === 'loading' && 'Loading…'}
-          {state === 'missing' && 'This reorder does not exist (it may have been deleted).'}
-          {state === 'error' && 'Could not load this reorder. Please try again.'}
-        </p>
+        {state === 'loading' || state === 'ready' ? (
+          <DetailSkeleton />
+        ) : (
+          <p className="mt-6 text-slate-600">
+            {state === 'missing' && 'This reorder does not exist (it may have been deleted).'}
+            {state === 'error' && 'Could not load this reorder. Please try again.'}
+          </p>
+        )}
       </div>
     )
   }

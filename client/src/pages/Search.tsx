@@ -6,6 +6,7 @@ import { PAGE_LABELS, PAGE_ORDER } from '../auth/permissions.ts'
 import { usePermissions } from '../auth/usePermissions.ts'
 import { useCrud } from '../hooks/useCrud.ts'
 import { SEARCH_SOURCES, type SearchNames, type SearchRow, type SearchSource } from '../services/searchSources.ts'
+import { SearchSkeleton } from '../components/Skeleton.tsx'
 
 const SHOWN_PER_GROUP = 5
 
@@ -126,7 +127,7 @@ export default function Search() {
           </section>
         )}
 
-        {term && !current && <p className="text-sm text-slate-500">Searching…</p>}
+        {term && !current && <SearchSkeleton />}
 
         {current && current.failed > 0 && (
           <p role="alert" className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

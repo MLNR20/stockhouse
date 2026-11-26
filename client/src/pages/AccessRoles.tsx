@@ -6,6 +6,7 @@ import { useCrud } from '../hooks/useCrud.ts'
 import { catalogSchema, roleSchema, type Catalog, type RoleRecord } from '../schemas/access.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
 import { titleCase } from '../utils/format.ts'
+import { RolesSkeleton } from '../components/Skeleton.tsx'
 
 /** A role being edited (or a blank one being added), kept apart from the saved record until Save. */
 type Draft = { id: string | null; name: string; description: string; permissions: Set<string> }
@@ -173,7 +174,7 @@ export default function AccessRoles() {
       )}
 
       {loading && roles.length === 0 ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <RolesSkeleton />
       ) : (
         <div className="space-y-6">
           {/* One tab per role; the New role tab appears while a role is being added. */}

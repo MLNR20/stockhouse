@@ -4,6 +4,7 @@ import { api } from '../api.ts'
 import { BarList, ChartCard, ColumnChart, StatCard, StatIcon } from '../components/AnalyticsWidgets.tsx'
 import { analyticsSchema, type Analytics } from '../schemas/analytics.ts'
 import { formatMoney } from '../utils/format.ts'
+import { DashboardSkeleton } from '../components/Skeleton.tsx'
 
 const ICONS = {
   orders: (
@@ -114,7 +115,7 @@ export default function Home() {
           </p>
         )}
 
-        {!data && loading && <p className="py-10 text-center text-sm text-slate-500">Loading…</p>}
+        {!data && loading && <DashboardSkeleton />}
 
         {data && (
           <>

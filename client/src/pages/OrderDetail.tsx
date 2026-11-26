@@ -11,6 +11,7 @@ import { productSchema, type Product } from '../schemas/product.ts'
 import { customerLookupSchema, type CustomerLookup } from '../schemas/shipment.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { formatDate, formatDateTime, formatMoney, shortId } from '../utils/format.ts'
+import { DetailSkeleton } from '../components/Skeleton.tsx'
 
 type LoadState = 'loading' | 'ready' | 'missing' | 'error'
 
@@ -61,11 +62,14 @@ export default function OrderDetail() {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8">
         {back}
-        <p className="mt-6 text-slate-600">
-          {state === 'loading' && 'Loading…'}
-          {state === 'missing' && 'This order does not exist (it may have been deleted).'}
-          {state === 'error' && 'Could not load this order. Please try again.'}
-        </p>
+        {state === 'loading' || state === 'ready' ? (
+          <DetailSkeleton />
+        ) : (
+          <p className="mt-6 text-slate-600">
+            {state === 'missing' && 'This order does not exist (it may have been deleted).'}
+            {state === 'error' && 'Could not load this order. Please try again.'}
+          </p>
+        )}
       </div>
     )
   }

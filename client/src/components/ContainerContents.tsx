@@ -8,6 +8,7 @@ import { containerContentSchema, type ContainerContent, type StorageContainer } 
 import { apiErrorMessage } from '../utils/apiError.ts'
 import ComboBox from './ComboBox.tsx'
 import Modal from './Modal.tsx'
+import { ListSkeleton } from './Skeleton.tsx'
 
 const inputClass =
   'rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
@@ -106,7 +107,7 @@ function Contents({ container }: { container: StorageContainer }) {
       )}
 
       {contents === null ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <ListSkeleton />
       ) : contents.length === 0 ? (
         <p className="text-sm text-slate-500">This container is empty.</p>
       ) : (

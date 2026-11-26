@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { getPageList, getTotalPages, paginate } from '../services/pagination.ts'
+import { Skeleton, TableRowsSkeleton } from './Skeleton.tsx'
 
 export type Column<T> = {
   /** Unique column key; also used to read the value when `render` isn't given. */
@@ -140,11 +141,7 @@ export default function DataTable<T>({
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={columns.length + (actions ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">
-                  Loading…
-                </td>
-              </tr>
+              <TableRowsSkeleton columns={columns.length + (actions ? 1 : 0)} rows={Math.min(pageSize, 5)} />
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + (actions ? 1 : 0)} className="px-4 py-10 text-center text-slate-500">
@@ -172,10 +169,14 @@ export default function DataTable<T>({
 
       {/* Footer: "10 out of 10" + pagination */}
       <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-600">
-          Showing {rows.length} out of {server ? server.totalItems : filtered.length} entries
-          {!server && filtered.length !== data.length && ` (filtered from ${data.length})`}
-        </p>
+        {loading ? (
+          <Skeleton className="h-4 w-44" />
+        ) : (
+          <p className="text-sm text-slate-600">
+            Showing {rows.length} out of {server ? server.totalItems : filtered.length} entries
+            {!server && filtered.length !== data.length && ` (filtered from ${data.length})`}
+          </p>
+        )}
 
         <nav className="flex items-center gap-1" aria-label="Pagination">
           <button

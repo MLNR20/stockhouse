@@ -5,6 +5,7 @@ import type { Permission } from '../auth/permissions.ts'
 import { usePermissions } from '../auth/usePermissions.ts'
 import { titleCase } from '../utils/format.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
+import { CardsSkeleton } from '../components/Skeleton.tsx'
 
 /** Who may open each report: the same rule the server applies. */
 const REPORT_ACCESS: Record<string, Permission[]> = {
@@ -80,7 +81,7 @@ export default function Reports() {
       )}
 
       {types === null ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <CardsSkeleton />
       ) : allowed.length === 0 ? (
         <p className="text-sm text-slate-500">There are no reports your role can open.</p>
       ) : (

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth.ts'
+import { SidebarSkeleton } from './Skeleton.tsx'
 import { usePermissions } from '../auth/usePermissions.ts'
 
 type SidebarProps = {
@@ -285,7 +286,7 @@ const sections: NavSection[] = [
 export default function Sidebar({ open, onClose, collapsed }: SidebarProps) {
   // Labels are always shown in the mobile drawer; they hide only on desktop when collapsed.
   const hideOnCollapse = collapsed ? 'md:hidden' : ''
-  const { canOpen } = usePermissions()
+  const { canOpen, loaded } = usePermissions()
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [loggingOut, setLoggingOut] = useState(false)
@@ -428,6 +429,8 @@ export default function Sidebar({ open, onClose, collapsed }: SidebarProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3" aria-label="Main">
+          {/* Which pages to list is not known until the user's access has loaded. */}
+          {!loaded && <SidebarSkeleton iconsOnly={collapsed} />}
           {visibleSections.map((section, index) => (
             <div
               key={section.title}

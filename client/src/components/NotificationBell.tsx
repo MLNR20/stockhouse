@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '../notifications/useNotifications.ts'
+import { NotificationsSkeleton } from './Skeleton.tsx'
 import type { AppNotification, NotificationType } from '../schemas/notification.ts'
 
 /** Where clicking a notification should take the user, by the kind of record it is about. */
@@ -135,11 +136,14 @@ export default function NotificationBell() {
           </div>
 
           <ul className="max-h-96 divide-y divide-slate-100 overflow-y-auto">
-            {items.length === 0 && (
-              <li className="px-4 py-8 text-center text-sm text-slate-500">
-                {loading ? 'Loading…' : 'You’re all caught up.'}
-              </li>
-            )}
+            {items.length === 0 &&
+              (loading ? (
+                <li>
+                  <NotificationsSkeleton />
+                </li>
+              ) : (
+                <li className="px-4 py-8 text-center text-sm text-slate-500">You’re all caught up.</li>
+              ))}
             {items.map((n) => (
               <li key={n.id}>
                 <button

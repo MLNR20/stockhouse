@@ -5,6 +5,7 @@ import { usePermissions } from '../auth/usePermissions.ts'
 import { useCrud } from '../hooks/useCrud.ts'
 import { catalogSchema, roleSchema, type Catalog, type RoleRecord } from '../schemas/access.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
+import { TableSkeleton } from '../components/Skeleton.tsx'
 
 const isAdmin = (role: RoleRecord) => role.system && role.name.toLowerCase() === 'admin'
 
@@ -120,7 +121,7 @@ export default function AccessPages() {
         )}
 
         {loading && roles.length === 0 ? (
-          <p className="text-sm text-slate-500">Loading…</p>
+          <TableSkeleton columns={5} rows={10} />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200">
             <table className="w-full text-sm">
