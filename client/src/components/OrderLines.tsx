@@ -12,9 +12,7 @@ import type { Product } from '../schemas/product.ts'
 import type { UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
 import ComboBox from './ComboBox.tsx'
-
-const money = (amount: number) =>
-  amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+import { formatMoney } from '../utils/format.ts'
 
 const emptyForm: OrderDetailFormValues = { productId: '', howSoldId: '', quantity: '1', salesPrice: '' }
 
@@ -190,6 +188,20 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
 
   return (
     <div className="space-y-5">
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold text-slate-900">Items</h2>
+        {editable && !editingId && (
+          <button
+            type="button"
+            onClick={() => setRows((all) => [...all, newRow()])}
+            disabled={saving}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+          >
+            + Add row
+          </button>
+        )}
+      </div>
+
       {error && (
         <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
@@ -265,7 +277,7 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
 
                   <div>
                     <label htmlFor={`od-price-${row.key}`} className={label}>
-                      Sales price
+                      Sales price (₱)
                     </label>
                     <input
                       id={`od-price-${row.key}`}
@@ -277,7 +289,7 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
                     {errors.salesPrice ? (
                       <p className="mt-1 text-xs text-red-600">{errors.salesPrice}</p>
                     ) : (
-                      base !== undefined && <p className="mt-1 text-xs text-slate-400">Base price {money(base)}</p>
+                      base !== undefined && <p className="mt-1 text-xs text-slate-400">Base price {formatMoney(base)}</p>
                     )}
                   </div>
 
@@ -312,16 +324,6 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            {!editingId && (
-              <button
-                type="button"
-                onClick={() => setRows((all) => [...all, newRow()])}
-                disabled={saving}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-              >
-                + Add row
-              </button>
-            )}
             <button
               type="submit"
               disabled={saving}
@@ -390,9 +392,9 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">{money(line.salesPrice)}</td>
-                  <td className="px-4 py-3 text-slate-500">{money(line.basePrice)}</td>
-                  <td className="px-4 py-3">{money(line.lineTotal)}</td>
+                  <td className="px-4 py-3">{formatMoney(line.salesPrice)}</td>
+                  <td className="px-4 py-3 text-slate-500">{formatMoney(line.basePrice)}</td>
+                  <td className="px-4 py-3">{formatMoney(line.lineTotal)}</td>
                   <td className="px-4 py-3">
                     <span className="mr-2">
                       {line.availableQuantity.toLocaleString()}
@@ -435,17 +437,19 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
         </table>
       </div>
 
+      <hr className="border-slate-200" />
+
       {/* Totals */}
       <div className="flex flex-col gap-1 text-sm sm:items-end">
         <p className="text-slate-600">
-          Items total: <span className="font-semibold text-slate-900">{money(linesTotal)}</span>
+          Items total: <span className="font-semibold text-slate-900">{formatMoney(linesTotal)}</span>
         </p>
         <p className="text-slate-600">
-          Order total: <span className="font-semibold text-slate-900">{money(order.totalPrice)}</span>
+          Order total: <span className="font-semibold text-slate-900">{formatMoney(order.totalPrice)}</span>
         </p>
         {!loading && lines.length > 0 && difference !== 0 && (
           <p className="text-amber-700">
-            The items are {money(Math.abs(difference))} {difference > 0 ? 'below' : 'above'} the order total.
+            The items are {formatMoney(Math.abs(difference))} {difference > 0 ? 'below' : 'above'} the order total.
           </p>
         )}
       </div>

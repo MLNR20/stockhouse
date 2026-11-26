@@ -18,7 +18,7 @@ import {
   type ShipmentInput,
 } from '../schemas/shipment.ts'
 import { truckSchema, type Truck } from '../schemas/truck.ts'
-import { formatDate, humanize, shortId, titleCase } from '../utils/format.ts'
+import { formatDate, formatMoney, humanize, shortId, titleCase } from '../utils/format.ts'
 
 const emptyValues: ShipmentFormValues = {
   orderId: '',
@@ -99,7 +99,7 @@ export default function Shipments() {
         placeholder: 'Select an order',
         options: orders.map((o) => ({
           value: o.id,
-          label: `${orderLabel.get(o.id) ?? `#${shortId(o.id)}`} · ${o.totalPrice.toFixed(2)} (${humanize(o.status)})`,
+          label: `${orderLabel.get(o.id) ?? `#${shortId(o.id)}`} · ${formatMoney(o.totalPrice)} (${humanize(o.status)})`,
         })),
       },
       {

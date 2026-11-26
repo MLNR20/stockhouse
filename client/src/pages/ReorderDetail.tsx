@@ -13,10 +13,7 @@ import { reorderSchema, type Reorder } from '../schemas/reorder.ts'
 import { supplierSchema, type Supplier } from '../schemas/supplier.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
-import { formatDate, formatDateTime, shortId } from '../utils/format.ts'
-
-const money = (amount: number) =>
-  amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+import { formatDate, formatDateTime, formatMoney, shortId } from '../utils/format.ts'
 
 type LoadState = 'loading' | 'ready' | 'missing' | 'error'
 
@@ -258,7 +255,7 @@ export default function ReorderDetail() {
 
         <Card title="Stock of this product">
           <dl>
-            <Row label="Base price">{product ? money(product.basePrice) : '—'}</Row>
+            <Row label="Base price">{product ? formatMoney(product.basePrice) : '—'}</Row>
             <Row label="On hand (all records)">{onHand.toLocaleString()}</Row>
           </dl>
           {stock.length === 0 ? (

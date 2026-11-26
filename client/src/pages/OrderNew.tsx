@@ -32,7 +32,7 @@ export default function OrderNew() {
         options: customers.map((c) => ({ value: c.id, label: `${c.firstName} ${c.lastName}` })),
       },
       { name: 'targetDeliveryDate', label: 'Delivery date', type: 'date' },
-      { name: 'totalPrice', label: 'Order total' },
+      { name: 'totalPrice', label: 'Order total (₱)' },
       { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
     ],
     [customers],

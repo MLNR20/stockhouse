@@ -3,6 +3,7 @@ import axios from 'axios'
 import { api } from '../api.ts'
 import { BarList, ChartCard, ColumnChart, StatCard, StatIcon } from '../components/AnalyticsWidgets.tsx'
 import { analyticsSchema, type Analytics } from '../schemas/analytics.ts'
+import { formatMoney } from '../utils/format.ts'
 
 const ICONS = {
   orders: (
@@ -61,9 +62,6 @@ const INVENTORY_STATUS_COLORS: Record<string, string> = {
   OUT_OF_STOCK: 'bg-red-500',
   DISCONTINUED: 'bg-slate-400',
 }
-
-const money = (amount: number) =>
-  amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 const humanize = (status: string) => status.replace(/_/g, ' ').toLowerCase()
 
@@ -134,10 +132,10 @@ export default function Home() {
                 hint="Open orders past their target date"
                 icon={ICONS.overdue}
               />
-              <StatCard label="Open order value" value={money(data.orders.openValue)} icon={ICONS.value} />
+              <StatCard label="Open order value" value={formatMoney(data.orders.openValue)} icon={ICONS.value} />
               <StatCard
                 label="Revenue"
-                value={money(data.orders.revenue)}
+                value={formatMoney(data.orders.revenue)}
                 hint="All orders except cancelled"
                 icon={ICONS.revenue}
               />

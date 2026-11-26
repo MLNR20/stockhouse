@@ -10,10 +10,7 @@ import { orderSchema, type Order } from '../schemas/order.ts'
 import { productSchema, type Product } from '../schemas/product.ts'
 import { customerLookupSchema, type CustomerLookup } from '../schemas/shipment.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
-import { formatDate, formatDateTime, shortId } from '../utils/format.ts'
-
-const money = (amount: number) =>
-  amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+import { formatDate, formatDateTime, formatMoney, shortId } from '../utils/format.ts'
 
 type LoadState = 'loading' | 'ready' | 'missing' | 'error'
 
@@ -99,7 +96,7 @@ export default function OrderDetail() {
         </div>
         <div>
           <dt className="text-slate-500">Order total</dt>
-          <dd className="mt-1 font-medium text-slate-900">{money(order.totalPrice)}</dd>
+          <dd className="mt-1 font-medium text-slate-900">{formatMoney(order.totalPrice)}</dd>
         </div>
         <div>
           <dt className="text-slate-500">Created / updated</dt>
@@ -113,7 +110,6 @@ export default function OrderDetail() {
       </dl>
       <hr className="mb-8 border-slate-200" />
 
-      <h2 className="mb-4 text-lg font-semibold text-slate-900">Items</h2>
       <OrderLines key={order.id} order={order} products={products} units={units} canEdit={can('orders:update')} />
     </div>
   )

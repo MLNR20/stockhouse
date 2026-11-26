@@ -6,6 +6,7 @@ import com.example.warehouse_proj.order.OrderService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class OrdersPdfReport implements PdfReport {
 
     @Override
     public List<String> headers() {
-        return List.of("Order", "Customer", "Total price", "Target delivery", "Status");
+        return List.of("Order", "Customer", "Total price (PHP)", "Target delivery", "Status");
     }
 
     @Override
@@ -45,7 +46,7 @@ public class OrdersPdfReport implements PdfReport {
                 .map(o -> List.of(
                         o.id().toString(),
                         customerNames.getOrDefault(o.customerId(), o.customerId().toString()),
-                        o.totalPrice().toPlainString(),
+                        String.format(Locale.US, "%,.2f", o.totalPrice()),
                         o.targetDeliveryDate().toString(),
                         o.status().name()))
                 .toList();

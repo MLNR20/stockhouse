@@ -14,14 +14,11 @@ import {
   type OrderInput,
 } from '../schemas/order.ts'
 import { customerLookupSchema, type CustomerLookup } from '../schemas/shipment.ts'
-import { formatDate, humanize, shortId, titleCase } from '../utils/format.ts'
+import { formatDate, formatMoney, humanize, shortId, titleCase } from '../utils/format.ts'
 
 const emptyValues: OrderFormValues = { customerId: '', totalPrice: '', targetDeliveryDate: '', status: 'PENDING' }
 
 const statusOptions = ORDER_STATUSES.map((status) => ({ value: status, label: titleCase(status) }))
-
-const formatMoney = (amount: number) =>
-  amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export default function Orders() {
   // Only used to name and offer customers, so a failure here just leaves the dropdown empty.
@@ -77,7 +74,7 @@ export default function Orders() {
         placeholder: 'Select a customer',
         options: customers.map((c) => ({ value: c.id, label: `${c.firstName} ${c.lastName}` })),
       },
-      { name: 'totalPrice', label: 'Total price' },
+      { name: 'totalPrice', label: 'Total price (₱)' },
       { name: 'targetDeliveryDate', label: 'Target delivery date', type: 'date' },
       { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
     ],

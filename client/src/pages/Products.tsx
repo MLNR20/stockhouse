@@ -12,11 +12,9 @@ import {
   type ProductFormValues,
   type ProductInput,
 } from '../schemas/product.ts'
+import { formatMoney } from '../utils/format.ts'
 
 const emptyValues: ProductFormValues = { name: '', basePrice: '', categoryId: '' }
-
-const formatPrice = (price: number) =>
-  price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export default function Products() {
   // Only used to name and offer categories, so a failure here just leaves the dropdown empty.
@@ -43,7 +41,7 @@ export default function Products() {
       {
         key: 'basePrice',
         header: 'Base price',
-        render: (p) => formatPrice(p.basePrice),
+        render: (p) => formatMoney(p.basePrice),
         searchValue: (p) => p.basePrice,
       },
       {
@@ -71,7 +69,7 @@ export default function Products() {
   const fields = useMemo<FieldConfig<ProductFormValues>[]>(
     () => [
       { name: 'name', label: 'Name' },
-      { name: 'basePrice', label: 'Base price' },
+      { name: 'basePrice', label: 'Base price (₱)' },
       {
         name: 'categoryId',
         label: 'Category',

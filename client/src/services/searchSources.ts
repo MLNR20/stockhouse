@@ -1,4 +1,4 @@
-import { formatDate, humanize, shortId } from '../utils/format.ts'
+import { formatDate, formatMoney, humanize, shortId } from '../utils/format.ts'
 
 /** A record from any list; only the id is guaranteed. */
 export type SearchRow = Record<string, unknown> & { id: string }
@@ -44,7 +44,7 @@ const named = (page: string, label: string, resource: string, key = 'name'): Sea
 export const SEARCH_SOURCES: SearchSource[] = [
   {
     ...named('/products', 'Products', '/api/products'),
-    detail: (r) => join(text(r, 'categoryName'), text(r, 'basePrice')),
+    detail: (r) => join(text(r, 'categoryName'), formatMoney(Number(r.basePrice))),
   },
   {
     page: '/orders',
@@ -52,7 +52,12 @@ export const SEARCH_SOURCES: SearchSource[] = [
     resource: '/api/orders',
     title: (r) => `Order #${shortId(r.id)}`,
     detail: (r, n) =>
-      join(nameOf(n.customer, r, 'customerId'), humanize(text(r, 'status')), formatDate(text(r, 'targetDeliveryDate'))),
+      join(
+        nameOf(n.customer, r, 'customerId'),
+        formatMoney(Number(r.totalPrice)),
+        humanize(text(r, 'status')),
+        formatDate(text(r, 'targetDeliveryDate')),
+      ),
     href: (r) => `/orders/${r.id}`,
   },
   {
