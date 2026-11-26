@@ -7,6 +7,7 @@ import { usePagedCrud } from '../hooks/usePagedCrud.ts'
 import { formatDateTime } from '../utils/format.ts'
 import DataTable, { type Column } from './DataTable.tsx'
 import EntityFormModal, { type FieldConfig } from './EntityFormModal.tsx'
+import NoticeModal from './NoticeModal.tsx'
 
 /** "Created" and "Updated" columns, read from the createdAt / updatedAt every API record carries. */
 function timestampColumns<T>(): Column<T>[] {
@@ -119,6 +120,9 @@ export default function CrudPage<
     [columns, timestamps],
   )
 
+  /** Name of the record that was just updated, shown in a confirmation dialog. */
+  const [updatedName, setUpdatedName] = useState<string | null>(null)
+
   // undefined = closed, null = adding, T = editing
   const [editing, setEditing] = useState<T | null | undefined>(undefined)
 
@@ -217,8 +221,19 @@ export default function CrudPage<
         initialValues={editing ? toFormValues(editing) : emptyValues}
         resetKey={editing?.id ?? 'new'}
         onClose={() => setEditing(undefined)}
-        onSubmit={(values) => (editing ? update(editing.id, values) : create(values))}
+        onSubmit={async (values) => {
+          if (!editing) {
+            await create(values)
+            return
+          }
+          const saved = await update(editing.id, values)
+          setUpdatedName(itemName(saved ?? editing))
+        }}
       />
+
+      <NoticeModal open={updatedName !== null} title="Update saved" onClose={() => setUpdatedName(null)}>
+        Your changes to the {singular} <span className="font-semibold text-slate-900">{updatedName}</span> were saved.
+      </NoticeModal>
     </div>
   )
 }

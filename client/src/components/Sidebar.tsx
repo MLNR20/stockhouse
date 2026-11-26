@@ -52,6 +52,15 @@ const sections: NavSection[] = [
         ),
       },
       {
+        to: '/analytics',
+        label: 'Analytics',
+        icon: (
+          <Icon>
+            <path d="M3 3v18h18M7 15l4-5 3 3 6-7" />
+          </Icon>
+        ),
+      },
+      {
         to: '/reports',
         label: 'Reports',
         icon: (

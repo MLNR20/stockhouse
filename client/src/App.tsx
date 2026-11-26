@@ -6,6 +6,7 @@ import AccessPages from './pages/AccessPages.tsx'
 import AccessRoles from './pages/AccessRoles.tsx'
 import AccessUsers from './pages/AccessUsers.tsx'
 import Aisles from './pages/Aisles.tsx'
+import Analytics from './pages/Analytics.tsx'
 import Categories from './pages/Categories.tsx'
 import Containers from './pages/Containers.tsx'
 import Customers from './pages/Customers.tsx'
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/rows" element={<ShelfRows />} />
             <Route path="/containers" element={<Containers />} />
             <Route path="/customers" element={<Customers />} />
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/search" element={<Search />} />
             <Route path="/trucks" element={<Trucks />} />

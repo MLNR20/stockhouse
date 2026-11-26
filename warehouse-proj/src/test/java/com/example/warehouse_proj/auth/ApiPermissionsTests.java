@@ -168,6 +168,7 @@ class ApiPermissionsTests {
         Map<String, List<String>> reads = Map.ofEntries(
                 Map.entry("/", List.of("analytics/summary")),
                 Map.entry("/history", List.of("audit-logs")),
+                Map.entry("/analytics", List.of("analytics/orders-vs-inventory", "products")),
                 Map.entry("/products", List.of("products/page", "categories")),
                 Map.entry("/categories", List.of("categories/page")),
                 Map.entry("/units", List.of("how-sold/page")),

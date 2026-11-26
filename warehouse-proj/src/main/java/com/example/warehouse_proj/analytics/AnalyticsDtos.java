@@ -44,4 +44,28 @@ public final class AnalyticsDtos {
 
     /** Statuses that count as "still open". */
     public static final List<OrderStatus> CLOSED_STATUSES = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+
+    /** One day of the orders-against-inventory trend; quantities in base units. */
+    public record TrendDay(
+            java.time.LocalDate date,
+            /** Units open orders need that day. */
+            long ordered,
+            /** Units needed from the first day up to and including this one. */
+            long orderedTotal,
+            /** Units reorders are expected to bring that day. */
+            long incoming,
+            /** Projected stock at the end of the day; negative means there is not enough. */
+            long stock) {
+    }
+
+    public record Trend(
+            java.time.LocalDate from,
+            java.time.LocalDate to,
+            long stockNow,
+            long totalOrdered,
+            long totalIncoming,
+            /** The first day stock is projected to run short, or null. */
+            java.time.LocalDate firstShortage,
+            java.util.List<TrendDay> days) {
+    }
 }

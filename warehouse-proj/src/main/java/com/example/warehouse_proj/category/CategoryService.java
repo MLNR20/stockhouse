@@ -1,6 +1,7 @@
 package com.example.warehouse_proj.category;
 
 import com.example.warehouse_proj.audit.AuditAction;
+import com.example.warehouse_proj.common.ActiveUniqueness;
 import com.example.warehouse_proj.audit.AuditLogService;
 import com.example.warehouse_proj.common.PageQuery;
 import com.example.warehouse_proj.common.PageResponse;
@@ -55,7 +56,9 @@ public class CategoryService {
 
     @Transactional
     public CategoryDtos.Response create(CategoryDtos.Request request) {
-        Category category = new Category(request.name().trim(), blankToNull(request.description()));
+        String name = request.name().trim();
+        requireNameFree(name, null);
+        Category category = new Category(name, blankToNull(request.description()));
         categories.save(category);
         audit.record(AuditAction.CREATE, ENTITY, category.getId());
         return CategoryDtos.Response.from(category);
@@ -64,7 +67,9 @@ public class CategoryService {
     @Transactional
     public CategoryDtos.Response update(UUID id, CategoryDtos.Request request) {
         Category category = find(id);
-        category.setName(request.name().trim());
+        String name = request.name().trim();
+        requireNameFree(name, id);
+        category.setName(name);
         category.setDescription(blankToNull(request.description()));
         // Flush so @PreUpdate has set updatedAt before the response is built.
         categories.saveAndFlush(category);
@@ -81,6 +86,12 @@ public class CategoryService {
         Category category = find(id);
         category.setActive(false);
         audit.record(AuditAction.DELETE, ENTITY, id);
+    }
+
+    /** One active category per name; a deleted category's name can be used again. */
+    private void requireNameFree(String name, UUID excludeId) {
+        ActiveUniqueness.require(
+                categories, "name", name, excludeId, "A category named \"" + name + "\" already exists");
     }
 
     private Category find(UUID id) {

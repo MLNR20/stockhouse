@@ -28,6 +28,7 @@ public final class AccessCatalog {
     public static final List<Page> PAGES = List.of(
             new Page("/", "Dashboard", "Overview"),
             new Page("/history", "History", "Overview"),
+            new Page("/analytics", "Analytics", "Overview"),
             new Page("/reports", "Reports", "Overview"),
             new Page("/products", "Products", "Catalog"),
             new Page("/categories", "Categories", "Catalog"),

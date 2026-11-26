@@ -97,9 +97,16 @@ export function usePagedCrud<T extends { id: Id }, TInput>(
     (input: TInput) => change(() => api.post(resource, input)),
     [change, resource],
   )
+  /** Resolves to the saved record as the server returned it, or null if it could not be read. */
   const update = useCallback(
-    (id: Id, input: TInput) => change(() => api.put(`${resource}/${id}`, input)),
-    [change, resource],
+    async (id: Id, input: TInput): Promise<T | null> => {
+      let saved: unknown
+      await change(async () => {
+        saved = (await api.put(`${resource}/${id}`, input)).data
+      })
+      return schema.safeParse(saved).data ?? null
+    },
+    [change, resource, schema],
   )
   const remove = useCallback((id: Id) => change(() => api.delete(`${resource}/${id}`)), [change, resource])
 

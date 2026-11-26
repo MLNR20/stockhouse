@@ -33,6 +33,7 @@ export type Permission = `${Resource}:${Action}`
 /** Sidebar order; the first one a user may open is where they land when the current page is not allowed. */
 export const PAGE_ORDER = [
   '/',
+  '/analytics',
   '/inventory',
   '/orders',
   '/customers',
@@ -60,6 +61,7 @@ export const PAGE_ORDER = [
 /** What each page is called, for searching pages by name. */
 export const PAGE_LABELS: Record<(typeof PAGE_ORDER)[number], string> = {
   '/': 'Dashboard',
+  '/analytics': 'Analytics',
   '/inventory': 'Inventory',
   '/orders': 'Orders',
   '/customers': 'Customers',
