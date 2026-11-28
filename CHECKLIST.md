@@ -135,6 +135,7 @@ Java's counterpart of SignalR is Spring WebSocket with STOMP. The project alread
   - [x] Their orders can still be updated, keeping the same customer
   - [x] Orders, shipments, search and the PDF report still show the name, marked "(deleted)"
   - [x] A deleted customer cannot be chosen for a new order, or moved onto another order
+  - [x] Deleted customers are not listed in the customer dropdown. Editing their order still shows the name in the box
 - [x] **Deleted unit of measure.** Deleting stays allowed
   - [x] Reorders, inventory records, order items and unit conversions that use it can still be saved
   - [x] Such a reorder can be marked received (adding the quantity to stock is Part A, step 6)

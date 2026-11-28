@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { z } from 'zod'
 import { apiErrorMessage } from '../utils/apiError.ts'
-import ComboBox from './ComboBox.tsx'
+import ComboBox, { type ComboOption } from './ComboBox.tsx'
 import Modal from './Modal.tsx'
 
-export type SelectOption = { value: string; label: string }
+export type SelectOption = ComboOption
 
 export type FieldConfig<TValues> = {
   name: keyof TValues & string

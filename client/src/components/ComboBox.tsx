@@ -1,6 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react'
 
-export type ComboOption = { value: string; label: string }
+export type ComboOption = {
+  value: string
+  label: string
+  /** Not suggested in the dropdown, but still shown in the box when it is the current value. */
+  hidden?: boolean
+}
 
 type ComboBoxProps = {
   id?: string
@@ -75,9 +80,11 @@ export default function ComboBox({
         {...aria}
       />
       <datalist id={listId}>
-        {options.map((o) => (
-          <option key={o.value} value={o.label} />
-        ))}
+        {options
+          .filter((o) => !o.hidden)
+          .map((o) => (
+            <option key={o.value} value={o.label} />
+          ))}
       </datalist>
     </>
   )

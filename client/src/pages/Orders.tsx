@@ -15,7 +15,7 @@ import {
   type OrderInput,
 } from '../schemas/order.ts'
 import { customerLookupSchema, type CustomerLookup } from '../schemas/shipment.ts'
-import { withDeleted } from '../utils/deleted.ts'
+import { markDeleted } from '../utils/deleted.ts'
 import { formatDate, formatMoney, humanize, shortId, titleCase } from '../utils/format.ts'
 
 const emptyValues: OrderFormValues = { customerId: '', totalPrice: '', targetDeliveryDate: '', status: 'PENDING' }
@@ -68,10 +68,13 @@ export default function Orders() {
       label: 'Customer',
       type: 'select',
       placeholder: 'Select a customer',
-      options: withDeleted(
-        customers.map((c) => ({ value: c.id, label: `${c.firstName} ${c.lastName}` })),
-        ...(editing ? [{ id: editing.customerId, name: editing.customerName, active: editing.customerActive }] : []),
-      ),
+      options: [
+        ...customers.map((c) => ({ value: c.id, label: `${c.firstName} ${c.lastName}` })),
+        // A deleted customer is never listed, but the box still names them so their order can be saved unchanged.
+        ...(editing && !editing.customerActive
+          ? [{ value: editing.customerId, label: markDeleted(editing.customerName, false), hidden: true }]
+          : []),
+      ],
     },
     { name: 'totalPrice', label: 'Total price (₱)' },
     { name: 'targetDeliveryDate', label: 'Target delivery date', type: 'date' },
