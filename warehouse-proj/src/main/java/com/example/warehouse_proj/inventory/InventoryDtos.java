@@ -24,7 +24,10 @@ public final class InventoryDtos {
             UUID howSoldId) {
     }
 
-    /** belowMinimum is true when the quantity on hand has fallen below the minimum threshold. */
+    /**
+     * belowMinimum is true when the quantity on hand has fallen below the minimum threshold. A deleted unit is
+     * still named, with howSoldActive = false (true when there is no unit).
+     */
     public record Response(
             UUID id,
             UUID productId,
@@ -33,6 +36,8 @@ public final class InventoryDtos {
             int minimumThreshold,
             boolean belowMinimum,
             UUID howSoldId,
+            String howSoldName,
+            boolean howSoldActive,
             boolean active,
             Instant createdAt,
             Instant updatedAt) {
@@ -46,6 +51,8 @@ public final class InventoryDtos {
                     i.getMinimumThreshold(),
                     i.getBaseQuantity() < i.getMinimumThreshold(),
                     i.getHowSold() == null ? null : i.getHowSold().getId(),
+                    i.getHowSold() == null ? null : i.getHowSold().getName(),
+                    i.getHowSold() == null || i.getHowSold().isActive(),
                     i.isActive(),
                     i.getCreatedAt(),
                     i.getUpdatedAt());

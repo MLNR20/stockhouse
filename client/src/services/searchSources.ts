@@ -1,3 +1,4 @@
+import { markDeleted } from '../utils/deleted.ts'
 import { formatDate, formatMoney, humanize, shortId } from '../utils/format.ts'
 
 /** A record from any list; only the id is guaranteed. */
@@ -7,7 +8,6 @@ export type SearchRow = Record<string, unknown> & { id: string }
 export type SearchNames = {
   product: ReadonlyMap<string, string>
   supplier: ReadonlyMap<string, string>
-  customer: ReadonlyMap<string, string>
 }
 
 export type SearchSource = {
@@ -51,9 +51,9 @@ export const SEARCH_SOURCES: SearchSource[] = [
     label: 'Orders',
     resource: '/api/orders',
     title: (r) => `Order #${shortId(r.id)}`,
-    detail: (r, n) =>
+    detail: (r) =>
       join(
-        nameOf(n.customer, r, 'customerId'),
+        markDeleted(text(r, 'customerName'), r.customerActive !== false),
         formatMoney(Number(r.totalPrice)),
         humanize(text(r, 'status')),
         formatDate(text(r, 'targetDeliveryDate')),

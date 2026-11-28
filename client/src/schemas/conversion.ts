@@ -5,7 +5,12 @@ import { timestampFields } from './timestamps.ts'
 export const conversionSchema = z.object({
   id: z.string(),
   parentHowSoldId: z.string(),
+  parentHowSoldName: z.string(),
+  /** False when that unit was deleted; it is still named. Same for the child unit. */
+  parentHowSoldActive: z.boolean(),
   childHowSoldId: z.string(),
+  childHowSoldName: z.string(),
+  childHowSoldActive: z.boolean(),
   unitConversion: z.number(),
   /** The product this conversion is for, or null when it applies to every product. */
   productId: z.string().nullable(),

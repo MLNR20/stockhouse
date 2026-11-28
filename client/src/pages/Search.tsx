@@ -35,15 +35,13 @@ export default function Search() {
   // Used only to name what results point at.
   const products = useCrud<Named>('/api/products', { schema: nameSchema, autoFetch: can('products:view') })
   const suppliers = useCrud<Named>('/api/suppliers', { schema: nameSchema, autoFetch: can('suppliers:view') })
-  const customers = useCrud<Named>('/api/customers', { schema: nameSchema, autoFetch: can('customers:view') })
 
   const names = useMemo<SearchNames>(
     () => ({
       product: toMap(products.items, (p) => String(p.name)),
       supplier: toMap(suppliers.items, (s) => String(s.supplierName)),
-      customer: toMap(customers.items, (c) => `${String(c.firstName)} ${String(c.lastName)}`),
     }),
-    [products.items, suppliers.items, customers.items],
+    [products.items, suppliers.items],
   )
 
   // The navbar can change the term while this page is open.

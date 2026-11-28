@@ -12,6 +12,8 @@ import type { Product } from '../schemas/product.ts'
 import type { UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
 import ComboBox from './ComboBox.tsx'
+import RecordName from './RecordName.tsx'
+import { withDeleted } from '../utils/deleted.ts'
 import { formatMoney } from '../utils/format.ts'
 import { TableRowsSkeleton } from './Skeleton.tsx'
 
@@ -185,7 +187,14 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
   }
 
   const productOptions = useMemo(() => products.map((p) => ({ value: p.id, label: p.name })), [products])
-  const unitOptions = useMemo(() => units.map((u) => ({ value: u.id, label: u.name })), [units])
+  // While a line is being edited, the unit it already uses is offered even if it was deleted since.
+  const unitOptions = useMemo(() => {
+    const active = units.map((u) => ({ value: u.id, label: u.name }))
+    const line = lines.find((l) => l.id === editingId)
+    return line
+      ? withDeleted(active, { id: line.howSoldId, name: line.howSoldName, active: line.howSoldActive })
+      : active
+  }, [units, lines, editingId])
 
   return (
     <div className="space-y-5">
@@ -380,7 +389,9 @@ export default function OrderLines({ order, products, units, canEdit }: Props) {
               lines.map((line) => (
                 <tr key={line.id} className="odd:bg-white even:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-900">{line.productName}</td>
-                  <td className="px-4 py-3">{line.howSoldName ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <RecordName name={line.howSoldName} active={line.howSoldActive} />
+                  </td>
                   <td className="px-4 py-3">
                     {line.quantity.toLocaleString()}
                     {line.baseUnitName && line.baseQuantityNeeded !== line.quantity && (

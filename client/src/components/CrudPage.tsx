@@ -38,7 +38,8 @@ type CrudPageProps<T extends { id: string | number }, TValues extends Record<str
   /** Must be a stable reference (module-level constant): changing it refetches the list. */
   schema: z.ZodType<T>
   columns: Column<T>[]
-  fields: FieldConfig<TValues>[]
+  /** A function gets the record being edited (null when adding), e.g. to offer what it already uses. */
+  fields: FieldConfig<TValues>[] | ((editing: T | null) => FieldConfig<TValues>[])
   /** Validates the raw form strings and produces the API payload. */
   inputSchema: z.ZodType<TInput, TValues>
   /** Values for a blank "add" form. */
@@ -216,7 +217,7 @@ export default function CrudPage<
         open={editing !== undefined && (editing ? canUpdate : canCreate)}
         title={editing ? `Edit ${singular}` : `Add ${singular}`}
         submitLabel={editing ? 'Save changes' : `Add ${singular}`}
-        fields={fields}
+        fields={typeof fields === 'function' ? fields(editing ?? null) : fields}
         schema={inputSchema}
         initialValues={editing ? toFormValues(editing) : emptyValues}
         resetKey={editing?.id ?? 'new'}

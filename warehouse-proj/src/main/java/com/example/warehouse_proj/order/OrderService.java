@@ -94,7 +94,10 @@ public class OrderService {
     public OrderDtos.Response update(UUID id, OrderDtos.Request request) {
         CustomerOrder order = find(id);
         OrderStatus previousStatus = order.getStatus();
-        order.setCustomer(findCustomer(request.customerId()));
+        // Keeping the customer it already has is always fine, even if that customer was deleted since.
+        if (!order.getCustomer().getId().equals(request.customerId())) {
+            order.setCustomer(findCustomer(request.customerId()));
+        }
         order.setTotalPrice(request.totalPrice());
         order.setTargetDeliveryDate(request.targetDeliveryDate());
         if (request.status() != null) {

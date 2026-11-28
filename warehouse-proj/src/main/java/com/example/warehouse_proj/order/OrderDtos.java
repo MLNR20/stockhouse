@@ -22,9 +22,12 @@ public final class OrderDtos {
             OrderStatus status) {
     }
 
+    /** A deleted customer is still named on their orders, with customerActive = false. */
     public record Response(
             UUID id,
             UUID customerId,
+            String customerName,
+            boolean customerActive,
             BigDecimal totalPrice,
             LocalDate targetDeliveryDate,
             OrderStatus status,
@@ -36,6 +39,8 @@ public final class OrderDtos {
             return new Response(
                     o.getId(),
                     o.getCustomer().getId(),
+                    o.getCustomer().getFirstName() + " " + o.getCustomer().getLastName(),
+                    o.getCustomer().isActive(),
                     o.getTotalPrice(),
                     o.getTargetDeliveryDate(),
                     o.getStatus(),

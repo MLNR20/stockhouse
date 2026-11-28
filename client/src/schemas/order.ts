@@ -7,6 +7,9 @@ export const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', '
 export const orderSchema = z.object({
   id: z.string(),
   customerId: z.string(),
+  customerName: z.string(),
+  /** False when the customer was deleted; they are still named on their orders. */
+  customerActive: z.boolean(),
   totalPrice: z.number(),
   targetDeliveryDate: z.string(),
   status: z.string(),

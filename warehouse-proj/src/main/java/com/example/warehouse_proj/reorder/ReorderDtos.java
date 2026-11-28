@@ -26,6 +26,7 @@ public final class ReorderDtos {
             ReorderStatus status) {
     }
 
+    /** A deleted unit is still named, with howSoldActive = false (true when there is no unit). */
     public record Response(
             UUID id,
             UUID supplierId,
@@ -33,6 +34,7 @@ public final class ReorderDtos {
             int quantity,
             UUID howSoldId,
             String howSoldName,
+            boolean howSoldActive,
             LocalDate expectedDate,
             ReorderStatus status,
             boolean active,
@@ -47,6 +49,7 @@ public final class ReorderDtos {
                     r.getQuantity(),
                     r.getHowSold() == null ? null : r.getHowSold().getId(),
                     r.getHowSold() == null ? null : r.getHowSold().getName(),
+                    r.getHowSold() == null || r.getHowSold().isActive(),
                     r.getExpectedDate(),
                     r.getStatus(),
                     r.isActive(),

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import CrudPage from '../components/CrudPage.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import type { FieldConfig } from '../components/EntityFormModal.tsx'
+import RecordName from '../components/RecordName.tsx'
 import StatusBadge from '../components/StatusBadge.tsx'
 import { useCrud } from '../hooks/useCrud.ts'
 import {
@@ -14,6 +15,7 @@ import {
 } from '../schemas/inventory.ts'
 import { productSchema, type Product } from '../schemas/product.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
+import { withDeleted } from '../utils/deleted.ts'
 import { humanize, titleCase } from '../utils/format.ts'
 
 const emptyValues: InventoryFormValues = {
@@ -32,7 +34,6 @@ export default function Inventory() {
   const { items: units } = useCrud<UnitOfMeasure>('/api/how-sold', { schema: unitOfMeasureSchema })
 
   const productName = useMemo(() => new Map(products.map((p) => [p.id, p.name])), [products])
-  const unitName = useMemo(() => new Map(units.map((u) => [u.id, u.name])), [units])
 
   const columns = useMemo<Column<InventoryRecord>[]>(
     () => [
@@ -68,35 +69,35 @@ export default function Inventory() {
       {
         key: 'howSold',
         header: 'Sold as',
-        render: (row) => (row.howSoldId ? (unitName.get(row.howSoldId) ?? '—') : '—'),
-        searchValue: (row) => (row.howSoldId ? unitName.get(row.howSoldId) : undefined),
+        render: (row) => <RecordName name={row.howSoldName} active={row.howSoldActive} />,
+        searchValue: (row) => row.howSoldName,
       },
     ],
-    [productName, unitName],
+    [productName],
   )
 
-  const fields = useMemo<FieldConfig<InventoryFormValues>[]>(
-    () => [
-      {
-        name: 'productId',
-        label: 'Product',
-        type: 'select',
-        placeholder: 'Select a product',
-        options: products.map((p) => ({ value: p.id, label: p.name })),
-      },
-      { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
-      { name: 'baseQuantity', label: 'Base quantity (on hand)', type: 'number' },
-      { name: 'minimumThreshold', label: 'Minimum threshold', type: 'number' },
-      {
-        name: 'howSoldId',
-        label: 'How sold',
-        type: 'select',
-        placeholder: 'Not set',
-        options: units.map((u) => ({ value: u.id, label: u.name })),
-      },
-    ],
-    [products, units],
-  )
+  const fields = (editing: InventoryRecord | null): FieldConfig<InventoryFormValues>[] => [
+    {
+      name: 'productId',
+      label: 'Product',
+      type: 'select',
+      placeholder: 'Select a product',
+      options: products.map((p) => ({ value: p.id, label: p.name })),
+    },
+    { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
+    { name: 'baseQuantity', label: 'Base quantity (on hand)', type: 'number' },
+    { name: 'minimumThreshold', label: 'Minimum threshold', type: 'number' },
+    {
+      name: 'howSoldId',
+      label: 'How sold',
+      type: 'select',
+      placeholder: 'Not set',
+      options: withDeleted(
+        units.map((u) => ({ value: u.id, label: u.name })),
+        ...(editing ? [{ id: editing.howSoldId, name: editing.howSoldName, active: editing.howSoldActive }] : []),
+      ),
+    },
+  ]
 
   return (
     <CrudPage<InventoryRecord, InventoryFormValues, InventoryInput>

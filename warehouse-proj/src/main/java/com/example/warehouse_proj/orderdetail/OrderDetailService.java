@@ -121,7 +121,11 @@ public class OrderDetailService {
         }
         detail.setQuantity(request.quantity());
         detail.setSalesPrice(request.salesPrice() != null ? request.salesPrice() : detail.getProduct().getBasePrice());
-        detail.setHowSold(chooseHowSold(request.howSoldId(), detail.getProduct()));
+        // Keeping the unit it already has is always fine, even if that unit was deleted since.
+        HowSold unit = detail.getHowSold();
+        if (unit == null || !unit.getId().equals(request.howSoldId())) {
+            detail.setHowSold(chooseHowSold(request.howSoldId(), detail.getProduct()));
+        }
         // Flush so @PreUpdate has set updatedAt before the response is built.
         details.saveAndFlush(detail);
         audit.record(AuditAction.UPDATE, ENTITY, detail.getId());
@@ -155,6 +159,7 @@ public class OrderDetailService {
         return inventories.findAllByProductIdAndActiveTrue(product.getId()).stream()
                 .map(Inventory::getHowSold)
                 .filter(Objects::nonNull)
+                .filter(HowSold::isActive) // a deleted unit is never given to a line by default
                 .findFirst()
                 .orElse(null);
     }

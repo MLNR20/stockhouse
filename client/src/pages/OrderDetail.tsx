@@ -4,11 +4,11 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../api.ts'
 import { usePermissions } from '../auth/usePermissions.ts'
 import OrderLines from '../components/OrderLines.tsx'
+import RecordName from '../components/RecordName.tsx'
 import StatusBadge from '../components/StatusBadge.tsx'
 import { useCrud } from '../hooks/useCrud.ts'
 import { orderSchema, type Order } from '../schemas/order.ts'
 import { productSchema, type Product } from '../schemas/product.ts'
-import { customerLookupSchema, type CustomerLookup } from '../schemas/shipment.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { formatDate, formatDateTime, formatMoney, shortId } from '../utils/format.ts'
 import { DetailSkeleton } from '../components/Skeleton.tsx'
@@ -25,7 +25,6 @@ export default function OrderDetail() {
   const { items: units } = useCrud<UnitOfMeasure>('/api/how-sold', { schema: unitOfMeasureSchema })
 
   const [order, setOrder] = useState<Order | null>(null)
-  const [customer, setCustomer] = useState<CustomerLookup | null>(null)
   const [state, setState] = useState<LoadState>('loading')
 
   useEffect(() => {
@@ -35,13 +34,8 @@ export default function OrderDetail() {
       try {
         const { data } = await api.get(`/api/orders/${orderId}`)
         const loaded = orderSchema.parse(data)
-        const loadedCustomer = await api
-          .get(`/api/customers/${loaded.customerId}`)
-          .then((r) => customerLookupSchema.parse(r.data))
-          .catch(() => null) // the page still works without the name
         if (cancelled) return
         setOrder(loaded)
-        setCustomer(loadedCustomer)
         setState('ready')
       } catch (err) {
         if (!cancelled) setState(axios.isAxiosError(err) && err.response?.status === 404 ? 'missing' : 'error')
@@ -74,7 +68,7 @@ export default function OrderDetail() {
     )
   }
 
-  const customerName = customer ? `${customer.firstName} ${customer.lastName}` : 'Unknown customer'
+  const customerName = <RecordName name={order.customerName} active={order.customerActive} />
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-8">

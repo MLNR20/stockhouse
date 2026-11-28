@@ -4,15 +4,15 @@ import { z } from 'zod'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api.ts'
 import { usePermissions } from '../auth/usePermissions.ts'
+import RecordName from '../components/RecordName.tsx'
 import StatusBadge from '../components/StatusBadge.tsx'
-import { useCrud } from '../hooks/useCrud.ts'
 import { conversionSchema, type Conversion } from '../schemas/conversion.ts'
 import { inventorySchema, type Inventory } from '../schemas/inventory.ts'
 import { productSchema, type Product } from '../schemas/product.ts'
 import { reorderSchema, type Reorder } from '../schemas/reorder.ts'
 import { supplierSchema, type Supplier } from '../schemas/supplier.ts'
-import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
 import { apiErrorMessage } from '../utils/apiError.ts'
+import { markDeleted } from '../utils/deleted.ts'
 import { formatDate, formatDateTime, formatMoney, shortId } from '../utils/format.ts'
 import { DetailSkeleton } from '../components/Skeleton.tsx'
 
@@ -51,8 +51,6 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 export default function ReorderDetail() {
   const { reorderId } = useParams()
   const { can } = usePermissions()
-  const { items: units } = useCrud<UnitOfMeasure>('/api/how-sold', { schema: unitOfMeasureSchema })
-
   const [data, setData] = useState<Data | null>(null)
   const [state, setState] = useState<LoadState>('loading')
   const [busy, setBusy] = useState(false)
@@ -87,8 +85,6 @@ export default function ReorderDetail() {
     setState('loading')
     void load()
   }, [load])
-
-  const unitName = (id: string | null) => (id ? (units.find((u) => u.id === id)?.name ?? '—') : '—')
 
   async function changeStatus(next: 'ORDERED' | 'RECEIVED' | 'CANCELLED') {
     if (!data) return
@@ -168,7 +164,7 @@ export default function ReorderDetail() {
           </h1>
           <p className="mt-1 text-[1.175rem] text-slate-500">
             {reorder.quantity.toLocaleString()}
-            {reorder.howSoldName ? ` ${reorder.howSoldName}` : ''} from {supplier?.supplierName ?? 'an unknown supplier'}
+            {reorder.howSoldName ? ` ${markDeleted(reorder.howSoldName, reorder.howSoldActive)}` : ''} from {supplier?.supplierName ?? 'an unknown supplier'}
           </p>
         </div>
         <StatusBadge status={reorder.status} />
@@ -233,7 +229,9 @@ export default function ReorderDetail() {
             <Row label="Product">{productName}</Row>
             <Row label="Supplier">{supplier?.supplierName ?? '—'}</Row>
             <Row label="Quantity">{reorder.quantity.toLocaleString()}</Row>
-            <Row label="Sold as">{reorder.howSoldName ?? '—'}</Row>
+            <Row label="Sold as">
+              <RecordName name={reorder.howSoldName} active={reorder.howSoldActive} />
+            </Row>
             <Row label="Expected delivery">{formatDate(reorder.expectedDate)}</Row>
             <Row label="Created">{formatDateTime(reorder.createdAt)}</Row>
             <Row label="Updated">{formatDateTime(reorder.updatedAt)}</Row>
@@ -270,7 +268,9 @@ export default function ReorderDetail() {
                 <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span>
                     <StatusBadge status={s.status} />
-                    <span className="ml-2 text-slate-500">sold as {unitName(s.howSoldId)}</span>
+                    <span className="ml-2 text-slate-500">
+                      sold as <RecordName name={s.howSoldName} active={s.howSoldActive} />
+                    </span>
                   </span>
                   <span className={s.belowMinimum ? 'font-semibold text-red-600' : 'text-slate-700'}>
                     {s.baseQuantity.toLocaleString()} on hand · minimum {s.minimumThreshold.toLocaleString()}
@@ -294,8 +294,9 @@ export default function ReorderDetail() {
             <ul className="space-y-1 text-sm text-slate-700">
               {conversions.map((c) => (
                 <li key={c.id}>
-                  1 {unitName(c.parentHowSoldId)} = {c.unitConversion.toLocaleString(undefined, { maximumFractionDigits: 4 })}{' '}
-                  {unitName(c.childHowSoldId)}
+                  1 {markDeleted(c.parentHowSoldName, c.parentHowSoldActive)} ={' '}
+                  {c.unitConversion.toLocaleString(undefined, { maximumFractionDigits: 4 })}{' '}
+                  {markDeleted(c.childHowSoldName, c.childHowSoldActive)}
                 </li>
               ))}
             </ul>

@@ -79,8 +79,13 @@ public class HowSoldConversionService {
     public HowSoldConversionDtos.Response update(UUID id, HowSoldConversionDtos.Request request) {
         requireDistinct(request);
         HowSoldConversion conversion = find(id);
-        conversion.setParentHowSold(findHowSold(request.parentHowSoldId()));
-        conversion.setChildHowSold(findHowSold(request.childHowSoldId()));
+        // Keeping the units it already has is always fine, even if one was deleted since.
+        if (!conversion.getParentHowSold().getId().equals(request.parentHowSoldId())) {
+            conversion.setParentHowSold(findHowSold(request.parentHowSoldId()));
+        }
+        if (!conversion.getChildHowSold().getId().equals(request.childHowSoldId())) {
+            conversion.setChildHowSold(findHowSold(request.childHowSoldId()));
+        }
         conversion.setUnitConversion(request.unitConversion());
         conversion.setProduct(findProduct(request.productId()));
         // Flush so @PreUpdate has set updatedAt before the response is built.

@@ -127,7 +127,11 @@ public class ReorderService {
         }
         requireSupplies(reorder.getSupplier().getId(), reorder.getProduct().getId());
         reorder.setQuantity(request.quantity());
-        reorder.setHowSold(findHowSold(request.howSoldId()));
+        // Keeping the unit it already has is always fine, even if that unit was deleted since.
+        HowSold unit = reorder.getHowSold();
+        if (unit == null || !unit.getId().equals(request.howSoldId())) {
+            reorder.setHowSold(findHowSold(request.howSoldId()));
+        }
         reorder.setExpectedDate(request.expectedDate());
 
         ReorderStatus next = request.status() != null ? request.status() : reorder.getStatus();

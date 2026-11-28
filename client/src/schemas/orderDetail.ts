@@ -10,6 +10,8 @@ export const orderDetailSchema = z.object({
   /** The unit the quantity is counted in (a "how sold" unit); null means the base unit. */
   howSoldId: z.string().nullable(),
   howSoldName: z.string().nullable(),
+  /** False when that unit was deleted; it is still named. */
+  howSoldActive: z.boolean(),
   quantity: z.number(),
   salesPrice: z.number(),
   lineTotal: z.number(),

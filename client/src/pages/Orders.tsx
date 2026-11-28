@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import CrudPage from '../components/CrudPage.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import type { FieldConfig } from '../components/EntityFormModal.tsx'
+import RecordName from '../components/RecordName.tsx'
 import StatusBadge from '../components/StatusBadge.tsx'
 import { useCrud } from '../hooks/useCrud.ts'
 import {
@@ -14,6 +15,7 @@ import {
   type OrderInput,
 } from '../schemas/order.ts'
 import { customerLookupSchema, type CustomerLookup } from '../schemas/shipment.ts'
+import { withDeleted } from '../utils/deleted.ts'
 import { formatDate, formatMoney, humanize, shortId, titleCase } from '../utils/format.ts'
 
 const emptyValues: OrderFormValues = { customerId: '', totalPrice: '', targetDeliveryDate: '', status: 'PENDING' }
@@ -21,13 +23,8 @@ const emptyValues: OrderFormValues = { customerId: '', totalPrice: '', targetDel
 const statusOptions = ORDER_STATUSES.map((status) => ({ value: status, label: titleCase(status) }))
 
 export default function Orders() {
-  // Only used to name and offer customers, so a failure here just leaves the dropdown empty.
+  // Only used to offer customers, so a failure here just leaves the dropdown empty.
   const { items: customers } = useCrud<CustomerLookup>('/api/customers', { schema: customerLookupSchema })
-
-  const customerName = useMemo(
-    () => new Map(customers.map((c) => [c.id, `${c.firstName} ${c.lastName}`])),
-    [customers],
-  )
 
   const columns = useMemo<Column<Order>[]>(
     () => [
@@ -40,8 +37,8 @@ export default function Orders() {
       {
         key: 'customer',
         header: 'Customer',
-        render: (o) => customerName.get(o.customerId) ?? '—',
-        searchValue: (o) => customerName.get(o.customerId),
+        render: (o) => <RecordName name={o.customerName} active={o.customerActive} />,
+        searchValue: (o) => o.customerName,
       },
       {
         key: 'totalPrice',
@@ -62,24 +59,24 @@ export default function Orders() {
         searchValue: (o) => humanize(o.status),
       },
     ],
-    [customerName],
+    [],
   )
 
-  const fields = useMemo<FieldConfig<OrderFormValues>[]>(
-    () => [
-      {
-        name: 'customerId',
-        label: 'Customer',
-        type: 'select',
-        placeholder: 'Select a customer',
-        options: customers.map((c) => ({ value: c.id, label: `${c.firstName} ${c.lastName}` })),
-      },
-      { name: 'totalPrice', label: 'Total price (₱)' },
-      { name: 'targetDeliveryDate', label: 'Target delivery date', type: 'date' },
-      { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
-    ],
-    [customers],
-  )
+  const fields = (editing: Order | null): FieldConfig<OrderFormValues>[] => [
+    {
+      name: 'customerId',
+      label: 'Customer',
+      type: 'select',
+      placeholder: 'Select a customer',
+      options: withDeleted(
+        customers.map((c) => ({ value: c.id, label: `${c.firstName} ${c.lastName}` })),
+        ...(editing ? [{ id: editing.customerId, name: editing.customerName, active: editing.customerActive }] : []),
+      ),
+    },
+    { name: 'totalPrice', label: 'Total price (₱)' },
+    { name: 'targetDeliveryDate', label: 'Target delivery date', type: 'date' },
+    { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
+  ]
 
   return (
     <CrudPage<Order, OrderFormValues, OrderInput>

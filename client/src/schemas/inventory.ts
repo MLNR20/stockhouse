@@ -26,6 +26,9 @@ export const inventorySchema = z.object({
   belowMinimum: z.boolean(),
   /** The unit it is sold in (a "how sold" unit), or null when not set. */
   howSoldId: z.string().nullable(),
+  howSoldName: z.string().nullable(),
+  /** False when that unit was deleted; it is still named. */
+  howSoldActive: z.boolean(),
   ...timestampFields,
 })
 

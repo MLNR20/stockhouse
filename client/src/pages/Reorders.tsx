@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import CrudPage from '../components/CrudPage.tsx'
 import type { Column } from '../components/DataTable.tsx'
 import type { FieldConfig } from '../components/EntityFormModal.tsx'
+import RecordName from '../components/RecordName.tsx'
 import StatusBadge from '../components/StatusBadge.tsx'
 import { useCrud } from '../hooks/useCrud.ts'
 import { productSchema, type Product } from '../schemas/product.ts'
@@ -16,6 +17,7 @@ import {
 } from '../schemas/reorder.ts'
 import { supplierSchema, type Supplier } from '../schemas/supplier.ts'
 import { unitOfMeasureSchema, type UnitOfMeasure } from '../schemas/unitOfMeasure.ts'
+import { withDeleted } from '../utils/deleted.ts'
 import { formatDate, humanize, titleCase } from '../utils/format.ts'
 
 const emptyValues: ReorderFormValues = {
@@ -61,7 +63,7 @@ export default function Reorders() {
       {
         key: 'howSold',
         header: 'Sold as',
-        render: (r) => r.howSoldName ?? '—',
+        render: (r) => <RecordName name={r.howSoldName} active={r.howSoldActive} />,
         searchValue: (r) => r.howSoldName,
       },
       {
@@ -80,35 +82,35 @@ export default function Reorders() {
     [productName, supplierName],
   )
 
-  const fields = useMemo<FieldConfig<ReorderFormValues>[]>(
-    () => [
-      {
-        name: 'supplierId',
-        label: 'Supplier',
-        type: 'select',
-        placeholder: 'Select a supplier',
-        options: suppliers.map((s) => ({ value: s.id, label: s.supplierName })),
-      },
-      {
-        name: 'productId',
-        label: 'Product (must be one this supplier supplies)',
-        type: 'select',
-        placeholder: 'Select a product',
-        options: products.map((p) => ({ value: p.id, label: p.name })),
-      },
-      { name: 'quantity', label: 'Quantity', type: 'number' },
-      {
-        name: 'howSoldId',
-        label: 'Sold as (optional)',
-        type: 'select',
-        placeholder: 'No unit',
-        options: units.map((u) => ({ value: u.id, label: u.name })),
-      },
-      { name: 'expectedDate', label: 'Expected delivery date (optional)', type: 'date' },
-      { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
-    ],
-    [suppliers, products, units],
-  )
+  const fields = (editing: Reorder | null): FieldConfig<ReorderFormValues>[] => [
+    {
+      name: 'supplierId',
+      label: 'Supplier',
+      type: 'select',
+      placeholder: 'Select a supplier',
+      options: suppliers.map((s) => ({ value: s.id, label: s.supplierName })),
+    },
+    {
+      name: 'productId',
+      label: 'Product (must be one this supplier supplies)',
+      type: 'select',
+      placeholder: 'Select a product',
+      options: products.map((p) => ({ value: p.id, label: p.name })),
+    },
+    { name: 'quantity', label: 'Quantity', type: 'number' },
+    {
+      name: 'howSoldId',
+      label: 'Sold as (optional)',
+      type: 'select',
+      placeholder: 'No unit',
+      options: withDeleted(
+        units.map((u) => ({ value: u.id, label: u.name })),
+        ...(editing ? [{ id: editing.howSoldId, name: editing.howSoldName, active: editing.howSoldActive }] : []),
+      ),
+    },
+    { name: 'expectedDate', label: 'Expected delivery date (optional)', type: 'date' },
+    { name: 'status', label: 'Status', type: 'select', placeholder: 'Select a status', options: statusOptions },
+  ]
 
   return (
     <CrudPage<Reorder, ReorderFormValues, ReorderInput>

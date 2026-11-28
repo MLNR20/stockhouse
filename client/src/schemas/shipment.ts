@@ -31,7 +31,8 @@ export type ShipmentInput = z.output<typeof shipmentInputSchema>
 /** What the order dropdown needs from GET /api/orders. */
 export const orderLookupSchema = z.object({
   id: z.string(),
-  customerId: z.string(),
+  customerName: z.string(),
+  customerActive: z.boolean(),
   totalPrice: z.number(),
   status: z.string(),
 })

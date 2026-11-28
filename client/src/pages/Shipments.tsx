@@ -7,17 +7,16 @@ import { useCrud } from '../hooks/useCrud.ts'
 import { employeeSchema, type Employee } from '../schemas/employee.ts'
 import {
   SHIPMENT_STATUSES,
-  customerLookupSchema,
   orderLookupSchema,
   shipmentInputSchema,
   shipmentSchema,
-  type CustomerLookup,
   type OrderLookup,
   type Shipment,
   type ShipmentFormValues,
   type ShipmentInput,
 } from '../schemas/shipment.ts'
 import { truckSchema, type Truck } from '../schemas/truck.ts'
+import { markDeleted } from '../utils/deleted.ts'
 import { formatDate, formatMoney, humanize, shortId, titleCase } from '../utils/format.ts'
 
 const emptyValues: ShipmentFormValues = {
@@ -33,20 +32,12 @@ const statusOptions = SHIPMENT_STATUSES.map((status) => ({ value: status, label:
 export default function Shipments() {
   // Lookups, only used to show names and fill the dropdowns.
   const { items: orders } = useCrud<OrderLookup>('/api/orders', { schema: orderLookupSchema })
-  const { items: customers } = useCrud<CustomerLookup>('/api/customers', { schema: customerLookupSchema })
   const { items: trucks } = useCrud<Truck>('/api/trucks', { schema: truckSchema })
   const { items: employees } = useCrud<Employee>('/api/warehouse-employees', { schema: employeeSchema })
 
-  const customerName = useMemo(
-    () => new Map(customers.map((c) => [c.id, `${c.firstName} ${c.lastName}`])),
-    [customers],
-  )
   const orderLabel = useMemo(
-    () =>
-      new Map(
-        orders.map((o) => [o.id, `#${shortId(o.id)} · ${customerName.get(o.customerId) ?? 'Unknown customer'}`]),
-      ),
-    [orders, customerName],
+    () => new Map(orders.map((o) => [o.id, `#${shortId(o.id)} · ${markDeleted(o.customerName, o.customerActive)}`])),
+    [orders],
   )
   const truckPlate = useMemo(() => new Map(trucks.map((t) => [t.id, t.plateNumber])), [trucks])
   const employeeName = useMemo(

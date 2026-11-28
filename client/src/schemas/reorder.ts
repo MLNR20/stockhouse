@@ -12,6 +12,8 @@ export const reorderSchema = z.object({
   /** The unit the quantity is counted in (a "how sold" unit such as Case), or null when not set. */
   howSoldId: z.string().nullable(),
   howSoldName: z.string().nullable(),
+  /** False when that unit was deleted; it is still named. */
+  howSoldActive: z.boolean(),
   /** Null when no delivery date was given. */
   expectedDate: z.string().nullable(),
   status: z.string(),

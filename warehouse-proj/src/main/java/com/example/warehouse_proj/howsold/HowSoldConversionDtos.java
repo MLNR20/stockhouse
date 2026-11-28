@@ -22,10 +22,15 @@ public final class HowSoldConversionDtos {
             UUID productId) {
     }
 
+    /** Deleted units are still named, with the matching "active" flag false. */
     public record Response(
             UUID id,
             UUID parentHowSoldId,
+            String parentHowSoldName,
+            boolean parentHowSoldActive,
             UUID childHowSoldId,
+            String childHowSoldName,
+            boolean childHowSoldActive,
             BigDecimal unitConversion,
             UUID productId,
             boolean active,
@@ -36,7 +41,11 @@ public final class HowSoldConversionDtos {
             return new Response(
                     c.getId(),
                     c.getParentHowSold().getId(),
+                    c.getParentHowSold().getName(),
+                    c.getParentHowSold().isActive(),
                     c.getChildHowSold().getId(),
+                    c.getChildHowSold().getName(),
+                    c.getChildHowSold().isActive(),
                     c.getUnitConversion(),
                     c.getProduct() == null ? null : c.getProduct().getId(),
                     c.isActive(),

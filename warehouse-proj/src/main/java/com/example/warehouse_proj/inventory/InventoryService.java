@@ -92,7 +92,11 @@ public class InventoryService {
         if (request.minimumThreshold() != null) {
             inventory.setMinimumThreshold(request.minimumThreshold());
         }
-        inventory.setHowSold(findHowSold(request.howSoldId()));
+        // Keeping the unit it already has is always fine, even if that unit was deleted since.
+        HowSold unit = inventory.getHowSold();
+        if (unit == null || !unit.getId().equals(request.howSoldId())) {
+            inventory.setHowSold(findHowSold(request.howSoldId()));
+        }
         // Flush so @PreUpdate has set updatedAt before the response is built.
         inventories.saveAndFlush(inventory);
         audit.record(AuditAction.UPDATE, ENTITY, inventory.getId());
